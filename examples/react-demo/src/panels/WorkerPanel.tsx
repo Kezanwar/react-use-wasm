@@ -82,7 +82,7 @@ export function WorkerPanel() {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Layers className="text-primary size-4" />
-        <code className="text-base">useWasmWorker</code>
+        <code className="text-foreground text-base">useWasmWorker</code>
         <Badge variant="secondary">Web Worker</Badge>
       </CardTitle>
       <CardDescription>

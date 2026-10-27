@@ -69,7 +69,7 @@ export function MainThreadPanel() {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Cpu className="text-primary size-4" />
-        <code className="text-base">useWasm</code>
+        <code className="text-foreground text-base">useWasm</code>
         <Badge variant="secondary">main thread</Badge>
       </CardTitle>
       <CardDescription>
