@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Type } from "lucide-react";
+import { Js } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { encode, readString, takePackedString, unpack, withAlloc, writeBytes } from "@/lib/wasm-memory";
 import { CodeBlock } from "@/components/CodeBlock";
@@ -60,10 +61,9 @@ export function StringsExample({ e }: { e: MathExports }) {
           Strings
         </CardTitle>
         <CardDescription>
-          A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back, so
-          Go packs the offset and length into a single <code className="font-mono">i64</code> —
-          which is exactly why it arrives in JavaScript as a{" "}
-          <code className="font-mono">bigint</code>.
+          A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back,
+          so Go packs the offset and length into a single <code>i64</code> — which is exactly why
+          it arrives in <Js /> as a <code>bigint</code>.
         </CardDescription>
       </CardHeader>
 
@@ -109,7 +109,7 @@ export function StringsExample({ e }: { e: MathExports }) {
 
         <p className="text-muted-foreground text-xs">
           The two calls share one buffer, so the reverse runs on the bytes{" "}
-          <code className="font-mono">upperInPlace</code> already uppercased. That is in-place
+          <code>upperInPlace</code> already uppercased. That is in-place
           mutation doing exactly what it says.
         </p>
 

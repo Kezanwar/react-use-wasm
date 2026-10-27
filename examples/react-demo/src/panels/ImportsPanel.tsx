@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWasm, useWasmWorker } from "react-use-wasm";
 import { ArrowLeftRight } from "lucide-react";
+import { Js } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,8 +37,8 @@ export function ImportsPanel() {
           Imports
         </CardTitle>
         <CardDescription>
-          Functions cannot cross a worker boundary, so the worker hook takes a URL and imports them
-          itself.
+          <Js /> functions cannot cross a worker boundary, so the worker hook takes a URL and the
+          worker imports them itself.
         </CardDescription>
       </CardHeader>
 
@@ -53,7 +54,7 @@ export function ImportsPanel() {
             main thread: logSum(40, 2)
           </Button>
           <span className="text-muted-foreground tabular text-sm" data-testid="imports-main-log">
-            <code className="font-mono">env.log</code> received: [{mainLog.join(", ")}]
+            <code>env.log</code> received: [{mainLog.join(", ")}]
           </span>
         </div>
 
@@ -71,7 +72,7 @@ export function ImportsPanel() {
             returned: {workerResult ?? "—"}
           </span>
           <span className="text-muted-foreground text-xs">
-            (<code className="font-mono">env.log</code> output is in the console)
+            (<code>env.log</code> output is in the console)
           </span>
         </div>
       </CardContent>

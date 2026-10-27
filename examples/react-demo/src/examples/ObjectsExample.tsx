@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Boxes, TriangleAlert } from "lucide-react";
+import { Js, Wasm } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import {
   encode,
@@ -105,7 +106,7 @@ export function ObjectsExample({ e }: { e: MathExports }) {
             <h3 className="font-semibold">Fixed struct layout</h3>
             <Badge variant="secondary">0 kB</Badge>
             <span className="text-muted-foreground text-xs">
-              fastest, but both sides must agree on the bytes
+              fastest, but <Js /> and <Wasm>wasm</Wasm> must agree on the bytes
             </span>
           </div>
 
@@ -136,7 +137,7 @@ export function ObjectsExample({ e }: { e: MathExports }) {
             <h3 className="font-semibold">JSON</h3>
             <Badge variant="destructive">+150 kB</Badge>
             <span className="text-muted-foreground text-xs">
-              easy, but <code className="font-mono">encoding/json</code> drags in Go's reflection
+              easy, but <code>encoding/json</code> drags in Go's reflection
             </span>
           </div>
 

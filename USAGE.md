@@ -245,9 +245,22 @@ components sit in `src/components/ui/` and are ordinary source files you can
 edit; `components.json` tells the CLI where to put new ones
 (`pnpm dlx shadcn@latest add <name>` from `examples/react-demo`).
 
-Two accent colours carry meaning and should not be used decoratively:
-`--js` (amber) is always the JavaScript side of a comparison, `--wasm`
-(violet, WebAssembly's brand colour) always the wasm side.
+Three colours carry meaning and should never be used decoratively:
+
+| token | colour | means |
+| --- | --- | --- |
+| `--js` | gold | the JavaScript side of anything |
+| `--wasm` | violet | the WebAssembly side (its brand colour) |
+| `--code` | orange | an identifier you could type |
+
+Write the first two with the `<Js />` and `<Wasm />` components in
+`src/components/Term.tsx` rather than typing the words, so the mapping cannot
+drift. `--code` is applied globally to `code` in `@layer base`, with
+`pre code` opting back out — a code block set entirely in orange is
+unreadable, and its own `CodeBlock` chrome already marks it as code.
+
+`--js` and `--code` are deliberately far apart in hue (gold at ~85, orange at
+~45). Earlier they were both amber and read as the same thing.
 
 `cn` comes from the npm package of that name, published by the shadcn org,
 rather than a local `src/lib/utils.ts`. That is what the current CLI

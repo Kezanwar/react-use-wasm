@@ -30,10 +30,13 @@
   --input: oklch(0.92 0.01 280);
   --ring: oklch(0.54 0.23 285);
 
-  --js: oklch(0.72 0.16 72);
-  --js-soft: oklch(0.96 0.04 78);
+  --js: oklch(0.68 0.15 85);
+  --js-soft: oklch(0.96 0.045 88);
   --wasm: oklch(0.54 0.23 285);
   --wasm-soft: oklch(0.96 0.03 285);
+  /* Inline code in prose. Deliberately a redder orange than --js, which is
+     a gold, so the two never read as the same thing. */
+  --code: oklch(0.56 0.16 45);
 }
 
 .dark {
@@ -56,10 +59,11 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.7 0.18 288);
 
-  --js: oklch(0.78 0.15 76);
-  --js-soft: oklch(0.3 0.05 76);
+  --js: oklch(0.82 0.14 90);
+  --js-soft: oklch(0.3 0.05 88);
   --wasm: oklch(0.72 0.17 288);
   --wasm-soft: oklch(0.3 0.06 288);
+  --code: oklch(0.76 0.13 50);
 }
 
 @theme inline {
@@ -89,6 +93,7 @@
   --color-js-soft: var(--js-soft);
   --color-wasm: var(--wasm);
   --color-wasm-soft: var(--wasm-soft);
+  --color-code: var(--code);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -110,10 +115,37 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /*
+   * Inline code in prose is orange everywhere, so an identifier is always
+   * visually a thing you could type. Code *blocks* opt out: they set their
+   * own colour and would otherwise be a wall of orange.
+   */
+  code {
+    @apply font-mono;
+    font-size: 0.9em;
+    color: var(--code);
+  }
+
+  pre code {
+    color: inherit;
+    font-size: inherit;
+  }
 }
 
 @keyframes spin-slow {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

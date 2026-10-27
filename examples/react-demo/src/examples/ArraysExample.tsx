@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Brackets } from "lucide-react";
+import { Js, Wasm } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { readInt32Array, withAlloc, writeInt32Array } from "@/lib/wasm-memory";
 import { CodeBlock } from "@/components/CodeBlock";
@@ -57,9 +58,9 @@ export function ArraysExample({ e }: { e: MathExports }) {
           Arrays
         </CardTitle>
         <CardDescription>
-          An <code className="font-mono">Int32Array</code> is written into linear memory and passed
-          as <code className="font-mono">(offset, length)</code>. Wasm sorts it in place and
-          JavaScript reads the same bytes back.
+          An <code>Int32Array</code> is written into linear memory and passed as{" "}
+          <code>(offset, length)</code>. <Wasm>Wasm</Wasm> sorts it in place and <Js /> reads the
+          same bytes back.
         </CardDescription>
       </CardHeader>
 

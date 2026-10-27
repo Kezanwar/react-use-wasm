@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWasmWorker } from "react-use-wasm";
 import { Layers, Play, TriangleAlert, X } from "lucide-react";
+import { Js, Wasm } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { useJsWorker } from "@/useJsWorker";
 import { BenchCard, Verdict } from "@/components/BenchCard";
@@ -81,12 +82,13 @@ export function WorkerPanel() {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Layers className="text-primary size-4" />
-        <code className="font-mono text-base">useWasmWorker</code>
+        <code className="text-base">useWasmWorker</code>
         <Badge variant="secondary">Web Worker</Badge>
       </CardTitle>
       <CardDescription>
-        <code className="font-mono">call</code> returns a Promise and the work happens off the main
-        thread, so the page stays interactive throughout.
+        <code>call</code> returns a Promise and the work happens off the main thread, so the
+        page stays interactive throughout. <Js /> runs in a plain module worker,{" "}
+        <Wasm>wasm</Wasm> in <code>useWasmWorker</code>.
       </CardDescription>
     </CardHeader>
   );
@@ -114,7 +116,7 @@ export function WorkerPanel() {
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
-              <code className="font-mono">fib(n)</code>, n =
+              <code>fib(n)</code>, n =
             </span>
             <Input
               type="number"

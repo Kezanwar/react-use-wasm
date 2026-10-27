@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWasm } from "react-use-wasm";
 import { Cpu, Play, TriangleAlert } from "lucide-react";
+import { Js, Wasm } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { jsFib } from "@/fib";
 import { BenchCard, Verdict } from "@/components/BenchCard";
@@ -68,12 +69,12 @@ export function MainThreadPanel() {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Cpu className="text-primary size-4" />
-        <code className="font-mono text-base">useWasm</code>
+        <code className="text-base">useWasm</code>
         <Badge variant="secondary">main thread</Badge>
       </CardTitle>
       <CardDescription>
-        <code className="font-mono">call</code> is synchronous, so results can be used straight in a
-        render body.
+        <code>call</code> is synchronous, so results can be used straight in a render body.
+        Both sides run here on the main thread: <Js /> first, then <Wasm>wasm</Wasm>.
       </CardDescription>
     </CardHeader>
   );
@@ -109,13 +110,13 @@ export function MainThreadPanel() {
       <CardContent className="space-y-4">
         <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 text-sm">
           <span>
-            <code className="font-mono">add(2, 3)</code> ={" "}
+            <code>add(2, 3)</code> ={" "}
             <strong className="text-foreground tabular" data-testid="add-result">
               {call("add", 2, 3)}
             </strong>
           </span>
           <span>
-            <code className="font-mono">scale(2.5, 4)</code> ={" "}
+            <code>scale(2.5, 4)</code> ={" "}
             <strong className="text-foreground tabular" data-testid="scale-result">
               {call("scale", 2.5, 4)}
             </strong>
@@ -125,7 +126,7 @@ export function MainThreadPanel() {
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
-              <code className="font-mono">fib(n)</code>, n =
+              <code>fib(n)</code>, n =
             </span>
             <Input
               type="number"
