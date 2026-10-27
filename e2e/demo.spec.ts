@@ -116,6 +116,32 @@ test("imports reach the module on both threads", async ({ page }) => {
 /* Examples tab: passing more than numbers                             */
 /* ------------------------------------------------------------------ */
 
+test("the frame counter belongs to Benchmarks and pins itself when scrolled past", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 900, height: 820 });
+  await page.goto("/");
+
+  const inline = page.getByTestId("frames");
+  const floating = page.getByTestId("frames-floating");
+
+  await expect(inline).toBeVisible({ timeout: 15_000 });
+  await expect(floating).toHaveCount(0);
+
+  // Scroll the inline pill off screen: a copy pins to the bottom right.
+  await page.mouse.wheel(0, 700);
+  await expect(floating).toBeVisible();
+
+  await page.mouse.wheel(0, -900);
+  await expect(floating).toHaveCount(0);
+
+  // It means nothing on the Examples tab, so it is not there at all.
+  await page.getByTestId("tab-examples").click();
+  await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
+  await expect(inline).toHaveCount(0);
+  await expect(floating).toHaveCount(0);
+});
+
 test("tabs switch between the two pages", async ({ page }) => {
   await page.goto("/");
 
