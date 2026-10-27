@@ -7,6 +7,6 @@ export function Wasm({ children = "WebAssembly" }: { children?: string }) {
   return <span className="text-wasm font-semibold">{children}</span>;
 }
 
-export function Js({ children = "JavaScript" }: { children?: string }) {
+export function Js({ children = "JS" }: { children?: string }) {
   return <span className="text-js font-semibold">{children}</span>;
 }
