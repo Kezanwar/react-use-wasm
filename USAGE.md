@@ -293,6 +293,26 @@ unreadable, and its own `CodeBlock` chrome already marks it as code.
 rather than a local `src/lib/utils.ts`. That is what the current CLI
 generates.
 
+### Syntax highlighting
+
+`prism-react-renderer` is handed a **deliberately empty theme**, so it emits
+token classNames and no inline styles. All colour lives in the
+`.code-block .token.*` rules in `src/styles.css`, which means the blocks use
+the page palette and follow dark mode with no extra work.
+
+**Rule order in that block matters and is commented as such.** Prism puts
+several classes on one token — a method call is
+`method function property-access` — and the rules are all single-class, so
+equal specificity means the last one wins. Least specific meaning first,
+most specific last. Putting `property-access` after `function` silently
+turns every method call plain.
+
+It costs about 134 kB raw / 41 kB gzipped of the demo bundle, which is more
+than it sounds like it should; `prism-react-renderer` v2 bundles Prism with
+a fixed language set and cannot be subset. Acceptable here because the demo
+is not published anywhere. Swap it for a small hand-rolled tokenizer if that
+ever changes.
+
 ---
 
 ## CI

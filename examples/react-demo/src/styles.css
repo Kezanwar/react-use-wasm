@@ -37,6 +37,17 @@
   /* Inline code in prose. Deliberately a redder orange than --js, which is
      a gold, so the two never read as the same thing. */
   --code: oklch(0.56 0.16 45);
+
+  /* Syntax highlighting. Keyword violet deliberately matches --wasm so the
+     blocks sit in the same world as the rest of the page. */
+  --syn-plain: oklch(0.3 0.02 280);
+  --syn-comment: oklch(0.6 0.02 280);
+  --syn-keyword: oklch(0.52 0.21 290);
+  --syn-string: oklch(0.5 0.13 150);
+  --syn-number: oklch(0.56 0.16 45);
+  --syn-function: oklch(0.5 0.17 255);
+  --syn-class: oklch(0.5 0.13 60);
+  --syn-punct: oklch(0.58 0.02 280);
 }
 
 .dark {
@@ -64,6 +75,15 @@
   --wasm: oklch(0.72 0.17 288);
   --wasm-soft: oklch(0.3 0.06 288);
   --code: oklch(0.76 0.13 50);
+
+  --syn-plain: oklch(0.9 0.01 280);
+  --syn-comment: oklch(0.58 0.02 280);
+  --syn-keyword: oklch(0.76 0.15 292);
+  --syn-string: oklch(0.78 0.14 152);
+  --syn-number: oklch(0.78 0.13 52);
+  --syn-function: oklch(0.76 0.13 250);
+  --syn-class: oklch(0.82 0.11 85);
+  --syn-punct: oklch(0.65 0.02 280);
 }
 
 @theme inline {
@@ -131,6 +151,82 @@
     color: inherit;
     font-size: inherit;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Syntax highlighting                                                  */
+/*                                                                      */
+/* prism-react-renderer is given an empty theme so it emits token       */
+/* classNames and no inline styles. Colouring happens here instead, so  */
+/* it follows the palette and flips with dark mode for free.            */
+/*                                                                      */
+/* ORDER MATTERS. Prism puts several classes on one token, e.g. a       */
+/* method call is "method function property-access". These rules are    */
+/* all single-class, so they have equal specificity and the last one    */
+/* wins. Least specific meaning first, most specific last.              */
+/* ------------------------------------------------------------------ */
+
+.code-block {
+  color: var(--syn-plain);
+}
+
+.code-block .token.comment,
+.code-block .token.prolog,
+.code-block .token.cdata {
+  color: var(--syn-comment);
+  font-style: italic;
+}
+
+.code-block .token.punctuation {
+  color: var(--syn-punct);
+}
+
+/* Plain by default: `exports.memory.buffer` should not light up. */
+.code-block .token.property-access,
+.code-block .token.attr-name,
+.code-block .token.parameter {
+  color: var(--syn-plain);
+}
+
+.code-block .token.keyword,
+.code-block .token.operator,
+.code-block .token.atrule {
+  color: var(--syn-keyword);
+}
+
+.code-block .token.string,
+.code-block .token.char,
+.code-block .token.attr-value,
+.code-block .token.regex {
+  color: var(--syn-string);
+}
+
+.code-block .token.number,
+.code-block .token.boolean,
+.code-block .token.constant,
+.code-block .token.symbol {
+  color: var(--syn-number);
+}
+
+.code-block .token.class-name,
+.code-block .token.known-class-name,
+.code-block .token.builtin,
+.code-block .token.tag {
+  color: var(--syn-class);
+}
+
+/* Last, so a token carrying "method function property-access" reads as a
+   call rather than inheriting the plain property colour above. */
+.code-block .token.function,
+.code-block .token.method {
+  color: var(--syn-function);
+}
+
+/* Prism's JSX grammar tags the `from` in `Array.from(...)` as an import
+   keyword. Two classes beats one, so this wins wherever it appears. These
+   snippets contain no import statements for it to get wrong. */
+.code-block .token.keyword.module {
+  color: var(--syn-function);
 }
 
 @keyframes spin-slow {
