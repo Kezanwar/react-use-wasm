@@ -1,168 +1,119 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Two accent colours carry meaning throughout the demo and are used
+ * nowhere else:
+ *   js   = amber,  the JavaScript side of every comparison
+ *   wasm = violet, WebAssembly's own brand colour (#654FF0)
+ */
 :root {
-  color-scheme: light dark;
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  --radius: 0.7rem;
+
+  --background: oklch(0.99 0.004 280);
+  --foreground: oklch(0.21 0.02 280);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 280);
+  --primary: oklch(0.54 0.23 285);
+  --primary-foreground: oklch(0.99 0.004 280);
+  --secondary: oklch(0.96 0.01 280);
+  --secondary-foreground: oklch(0.25 0.02 280);
+  --muted: oklch(0.96 0.01 280);
+  --muted-foreground: oklch(0.53 0.02 280);
+  --accent: oklch(0.95 0.03 285);
+  --accent-foreground: oklch(0.35 0.14 285);
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.92 0.01 280);
+  --input: oklch(0.92 0.01 280);
+  --ring: oklch(0.54 0.23 285);
+
+  --js: oklch(0.72 0.16 72);
+  --js-soft: oklch(0.96 0.04 78);
+  --wasm: oklch(0.54 0.23 285);
+  --wasm-soft: oklch(0.96 0.03 285);
 }
 
-body {
-  margin: 0;
-  padding: 2rem 1rem;
+.dark {
+  --background: oklch(0.17 0.015 280);
+  --foreground: oklch(0.96 0.005 280);
+  --card: oklch(0.21 0.018 280);
+  --card-foreground: oklch(0.96 0.005 280);
+  --popover: oklch(0.21 0.018 280);
+  --popover-foreground: oklch(0.96 0.005 280);
+  --primary: oklch(0.7 0.18 288);
+  --primary-foreground: oklch(0.18 0.02 280);
+  --secondary: oklch(0.27 0.02 280);
+  --secondary-foreground: oklch(0.96 0.005 280);
+  --muted: oklch(0.27 0.02 280);
+  --muted-foreground: oklch(0.69 0.015 280);
+  --accent: oklch(0.3 0.04 285);
+  --accent-foreground: oklch(0.9 0.05 285);
+  --destructive: oklch(0.65 0.2 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.7 0.18 288);
+
+  --js: oklch(0.78 0.15 76);
+  --js-soft: oklch(0.3 0.05 76);
+  --wasm: oklch(0.72 0.17 288);
+  --wasm-soft: oklch(0.3 0.06 288);
 }
 
-main {
-  max-width: 48rem;
-  margin: 0 auto;
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-js: var(--js);
+  --color-js-soft: var(--js-soft);
+  --color-wasm: var(--wasm);
+  --color-wasm-soft: var(--wasm-soft);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-h1 {
-  margin-bottom: 0.25rem;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Numbers in tables and timings should not jitter as they change. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
-.sub {
-  margin-top: 0;
-  opacity: 0.75;
-}
-
-section {
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
-h2 {
-  margin-top: 0;
-  font-size: 1.1rem;
-}
-
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  padding: 0.1em 0.35em;
-  border-radius: 0.25em;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-button {
-  font: inherit;
-  padding: 0.35rem 0.8rem;
-  border-radius: 0.4rem;
-  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-input,
-select {
-  font: inherit;
-  padding: 0.25rem 0.4rem;
-  border-radius: 0.4rem;
-  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  background: transparent;
-  color: inherit;
-}
-
-input[type="number"] {
-  width: 6rem;
-}
-
-.hint {
-  opacity: 0.65;
-  font-size: 0.9rem;
-}
-
-.error {
-  color: #c0392b;
-}
-
-.heartbeat {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 1.5rem;
-}
-
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
+@keyframes spin-slow {
   to {
     transform: rotate(360deg);
   }
-}
-
-/* --- benchmark cards ------------------------------------------------- */
-
-.bench-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin: 1rem 0 0.25rem;
-}
-
-@media (max-width: 34rem) {
-  .bench-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.bench {
-  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 0.6rem;
-  padding: 0.75rem 1rem;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.bench-faster {
-  border-color: color-mix(in srgb, currentColor 55%, transparent);
-  background: color-mix(in srgb, currentColor 6%, transparent);
-}
-
-.bench-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.bench-ms {
-  font-size: 1.7rem;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-  margin: 0.15rem 0 0.1rem;
-}
-
-.bench-pending {
-  font-size: 1rem;
-  opacity: 0.55;
-}
-
-.bench-value {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
-  opacity: 0.7;
-  margin-bottom: 0.35rem;
-}
-
-.verdict {
-  margin: 0.35rem 0 0;
-  font-variant-numeric: tabular-nums;
 }

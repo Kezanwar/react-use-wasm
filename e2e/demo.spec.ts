@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const MS = /\d+(\.\d+)? ms/;
+const MS = /\d+(\.\d+)?\s*ms/;
 /** toLocaleString inserts group separators, so match the digits loosely. */
 const digits = (n: number) => new RegExp(String(n).split("").join("[,.\\s]?"));
 
