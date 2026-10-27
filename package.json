@@ -1,0 +1,74 @@
+{
+  "name": "react-use-wasm",
+  "version": "0.1.0",
+  "description": "Typed React hooks for loading WebAssembly and calling its exports, on the main thread or in a Web Worker.",
+  "keywords": [
+    "react",
+    "hooks",
+    "wasm",
+    "webassembly",
+    "web-worker",
+    "worker",
+    "typescript",
+    "tinygo"
+  ],
+  "license": "MIT",
+  "author": "Kez Anwar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kezanwar/react-use-wasm.git"
+  },
+  "homepage": "https://github.com/kezanwar/react-use-wasm#readme",
+  "bugs": {
+    "url": "https://github.com/kezanwar/react-use-wasm/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@11.15.1",
+  "scripts": {
+    "build": "tsup",
+    "dev": "pnpm --filter react-use-wasm-demo dev",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "playwright test",
+    "build:wasm": "sh scripts/build-wasm.sh",
+    "inspect:wasm": "node scripts/inspect-wasm.mjs examples/react-demo/public/math.wasm --allow-imports env.log",
+    "prepublishOnly": "pnpm build && pnpm test"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "jsdom": "^25.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wabt": "^1.0.36"
+  }
+}

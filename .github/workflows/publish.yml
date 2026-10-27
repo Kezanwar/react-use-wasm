@@ -1,0 +1,45 @@
+name: Publish
+
+# Fires when you publish a GitHub release. Tag it v<version>, e.g. v0.1.0.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  # Required by `npm publish --provenance`.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Tag must match the version in package.json
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "release tag $GITHUB_REF_NAME does not match package.json version $PKG" >&2
+            exit 1
+          fi
+
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+
+      # prepublishOnly runs build + test once more as a final gate.
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
