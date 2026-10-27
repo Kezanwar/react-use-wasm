@@ -38,10 +38,21 @@ Run all of these from the repo root.
 | `pnpm inspect:wasm` | lists imports/exports of the committed `math.wasm` |
 | `pnpm test:browser` | Playwright: the demo in real Chromium, plus a sub-directory deploy |
 
-**Order matters for `pnpm test`.** Two suites assert things about the built
-bundles (`test/dist-output.test.ts` and the hostile-globals part of
-`test/ssr.test.tsx`). They skip cleanly if `dist/` is missing, so run
-`pnpm build` first if you want the full suite. CI does exactly that.
+**`pnpm build` before `pnpm test`.** Three suites assert things about the
+built bundles: `test/dist-output.test.ts`, `test/dist-types.test.ts`, and the
+hostile-globals part of `test/ssr.test.tsx`. They skip cleanly when `dist/`
+is missing, so an unbuilt checkout quietly tests less. CI builds first.
+
+**`pnpm typecheck` needs nothing built**, and it must stay that way. Both
+tsconfigs map `react-use-wasm` to `src/index.ts`. The demo briefly resolved
+it through the workspace link to `dist/` instead, which worked on any machine
+that had ever run a build and failed on a clean CI runner with eight
+`Cannot find module 'react-use-wasm'` errors.
+
+That mapping means nothing type-checks the *published* declarations, which
+is what `test/dist-types.test.ts` is for: it compiles a realistic consumer
+against `dist/index.d.ts` and is the only thing that would catch a broken
+`.d.ts` before publish.
 
 ---
 
@@ -139,6 +150,7 @@ section "`call` or `exports`?" is the user-facing version of this.
 | `test/math-wasm.test.ts` | node | the committed `math.wasm` against the `MathExports` interface |
 | `test/memory-wasm.test.ts` | node | the committed `memory.wasm` against `MemoryExports`, and every step of the linear-memory protocol |
 | `test/dist-output.test.ts` | node | the published artefact (see Build above) |
+| `test/dist-types.test.ts` | node | type-checks a real consumer against the built `dist/index.d.ts` |
 | `e2e/demo.spec.ts` | Chromium | the real browser, below |
 | `e2e/subpath.spec.ts` | Chromium | the production build served from a sub-directory, the way GitHub Pages does |
 
