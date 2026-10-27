@@ -26,7 +26,12 @@ export function CodeBlock({
   };
 
   return (
-    <div className={cn("border-border overflow-hidden rounded-xl border shadow-sm", className)}>
+    <div
+      className={cn(
+        "border-border overflow-hidden rounded-xl border shadow-sm",
+        className,
+      )}
+    >
       <div className="border-border bg-muted flex items-center gap-2 border-b py-1.5 pr-1.5 pl-3">
         <FileCode2 className="text-muted-foreground size-3.5 shrink-0" />
         <span className="text-muted-foreground font-mono text-[11px] tracking-wide uppercase">
@@ -40,7 +45,7 @@ export function CodeBlock({
         >
           {copied ? (
             <>
-              <Check className="size-3.5" /> Copied
+              <Check className="size-3.5 text-green-300" /> Copied
             </>
           ) : (
             <>
@@ -51,7 +56,7 @@ export function CodeBlock({
       </div>
 
       <pre className="bg-card text-foreground/85 overflow-x-auto p-3.5 text-[12.5px] leading-relaxed">
-        <code>{code}</code>
+        <code className="text-green-500">{code}</code>
       </pre>
     </div>
   );
