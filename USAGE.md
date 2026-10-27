@@ -32,7 +32,7 @@ Run all of these from the repo root.
 | `pnpm dev` | builds the package, then starts the Vite demo on :5173 |
 | `pnpm test` | Vitest: 59 tests, including 12 type tests via `tsc` |
 | `pnpm test:watch` | same, in watch mode |
-| `pnpm typecheck` | `tsc --noEmit` over `src`, `test`, `e2e` and the demo |
+| `pnpm typecheck` | `tsc --noEmit` over the package, then the demo's own tsconfig |
 | `pnpm build` | tsup → `dist/` (ESM + CJS + `.d.ts` + sourcemaps) |
 | `pnpm build:wasm` | rebuilds `math.wasm` with TinyGo, then audits its imports |
 | `pnpm inspect:wasm` | lists imports/exports of the committed `math.wasm` |
@@ -57,10 +57,16 @@ test/
   helpers/wat.ts       .wat -> bytes, plus the path to the built math.wasm
 e2e/                   Playwright specs (real browser only)
 examples/
-  go/                  math.go + go.mod, the TinyGo source
-  react-demo/          Vite + React app, consumes the package via workspace link
+  go/
+    math.go            numbers in, numbers out
+    memory.go          the linear-memory protocol (alloc/free, arrays, strings, structs, JSON)
+  react-demo/          Vite + React + Tailwind v4 + shadcn/ui, linked via the workspace
     public/math.wasm           committed, so the demo and tests work without TinyGo
     public/js-fib-worker.js    the JavaScript side of the worker benchmark
+    src/pages/                 one per tab: Benchmarks, Examples
+    src/panels/                the three Benchmarks panels
+    src/examples/              the three Examples cards
+    src/lib/wasm-memory.ts     the JS half of the linear-memory protocol
     src/fib.ts                 the JavaScript side of the main-thread benchmark
     src/useJsWorker.ts         demo-only hook, shaped like useWasmWorker
 scripts/
@@ -210,6 +216,42 @@ WASI imports, which would make the module unusable with these hooks.
 
 TinyGo also emits a handful of runtime helpers (`fminimum`, `fmaximumf`, …).
 They are harmless and simply not declared in `MathExports`.
+
+---
+
+## The demo module is 186 kB, on purpose
+
+`math.wasm` was 1.1 kB when it only did arithmetic. Adding the
+linear-memory exports took it to 15 kB; adding `encoding/json` took it to
+186 kB, because Go's JSON needs the reflection machinery.
+
+**That is deliberate and should stay.** The Examples tab shows objects passed
+two ways — a fixed struct layout that costs nothing, and JSON that costs
+150 kB — and the point is lost if the expensive one is removed. The binary is
+a demo asset: `files: ["dist"]` means it never reaches anyone installing the
+package.
+
+If you do want it small again, drop `jsonStats` and the `encoding/json`
+import from `examples/go/memory.go`, and remove the JSON half of
+`src/examples/ObjectsExample.tsx`.
+
+---
+
+## Demo styling
+
+Tailwind v4 through `@tailwindcss/vite`, so there is **no `tailwind.config.js`** —
+the theme lives in `@theme inline` at the top of `src/styles.css`. shadcn/ui
+components sit in `src/components/ui/` and are ordinary source files you can
+edit; `components.json` tells the CLI where to put new ones
+(`pnpm dlx shadcn@latest add <name>` from `examples/react-demo`).
+
+Two accent colours carry meaning and should not be used decoratively:
+`--js` (amber) is always the JavaScript side of a comparison, `--wasm`
+(violet, WebAssembly's brand colour) always the wasm side.
+
+`cn` comes from the npm package of that name, published by the shadcn org,
+rather than a local `src/lib/utils.ts`. That is what the current CLI
+generates.
 
 ---
 

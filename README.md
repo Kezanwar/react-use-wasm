@@ -159,6 +159,59 @@ if (status !== "ready") return null;    // works
 
 ---
 
+## Passing more than numbers
+
+A wasm function can only take and return numbers — `i32`, `i64`, `f32`, `f64`. There is no string type, no array, no struct. Anything bigger travels as an **offset** into the module's linear memory, one flat `ArrayBuffer` that both sides read and write:
+
+```ts
+const { isReady, exports } = useWasm<MathExports>("/math.wasm");
+if (!isReady) return null;
+
+// 1. reserve space        2. write into it
+const ptr = exports.alloc(xs.byteLength);
+new Int32Array(exports.memory.buffer, ptr, xs.length).set(xs);
+
+// 3. call with (offset, length)
+const total = exports.sumInt32(ptr, xs.length);
+exports.sortInt32(ptr, xs.length);              // mutates in place
+
+// 4. read back, then free
+const sorted = new Int32Array(exports.memory.buffer, ptr, xs.length);
+exports.free(ptr);
+```
+
+Allocate, write, call with `(offset, length)`, read back, free. Every shape follows that pattern. The Examples tab of the demo runs all of them live with the source beside each one.
+
+**Your module has to export an allocator.** `alloc` and `free` above are ordinary exports you write yourself; wasm does not provide them. [`examples/go/memory.go`](examples/go/memory.go) has a demo-grade pair.
+
+**Returning something new needs two values, and wasm returns one.** The usual answer is to pack the offset and length into a single `i64` — which is why it arrives in JavaScript as a `bigint`:
+
+```ts
+const packed = exports.reverseString(ptr, len);   // bigint
+const outPtr = Number(packed >> 32n);
+const outLen = Number(packed & 0xffffffffn);
+```
+
+The other option is an out-pointer: pass a third offset and have the function write its result there. That is how `centroid` "returns" a struct.
+
+**Structs are a layout agreement, not a type.** `type Point struct { X, Y float64 }` is 16 bytes with no padding, so JavaScript builds the same thing with a `Float64Array` and the two sides simply agree. Nothing checks this for you.
+
+**JSON works and costs a fortune.** Serialising both ways needs no layout agreement and is the obvious reach, but in Go it pulls in the reflection machinery: the demo module is **15 kB without `encoding/json` and 186 kB with it**. Worth knowing before you reach for it.
+
+### The one rule that catches everyone
+
+**Never cache a typed-array view.** `memory.grow()` detaches the old `ArrayBuffer`, and every view onto it silently becomes zero length:
+
+```ts
+const view = new Uint8Array(exports.memory.buffer);
+exports.somethingThatAllocates();
+view.byteLength;  // 0 — detached, and nothing warned you
+```
+
+Take a fresh view off `exports.memory.buffer` every time you use it. [`examples/react-demo/src/lib/wasm-memory.ts`](examples/react-demo/src/lib/wasm-memory.ts) does exactly that, and is a reasonable starting point to copy.
+
+---
+
 ## When to use the worker hook
 
 Rough rule: **if a single call takes longer than about 50 ms, use `useWasmWorker`.**
@@ -330,7 +383,7 @@ Standard Go (`GOOS=js GOARCH=wasm`) **does not work.** It exports nothing callab
 tinygo build -target=wasm-unknown -no-debug -o math.wasm .
 ```
 
-It exports `add`, `fib`, `countPrimes`, `scale` and `logSum` (which calls back into the host via the `env.log` import), plus the `_initialize` TinyGo adds for you.
+It exports two groups. Numbers in, numbers out: `add`, `fib`, `countPrimes`, `scale` and `logSum` (which calls back into the host via the `env.log` import). And, from [`memory.go`](examples/go/memory.go), the linear-memory protocol: `alloc`, `free`, `sumInt32`, `sortInt32`, `scaleFloat64`, `upperInPlace`, `reverseString`, `centroid` and `jsonStats`. Plus the `_initialize` TinyGo adds for you.
 
 ```go
 //go:wasmimport env log
@@ -367,13 +420,17 @@ pnpm build:wasm    # rebuild examples/go/math.go with TinyGo
 pnpm test:browser  # Playwright against the demo in real Chromium
 ```
 
-The demo at [`examples/react-demo`](examples/react-demo) is built around a head-to-head benchmark. Each hook gets a panel that runs the same naive recursive `fib` twice, once in JavaScript and once in the TinyGo module, and reports both timings:
+The demo at [`examples/react-demo`](examples/react-demo) (Vite, Tailwind, shadcn/ui) has two tabs.
+
+**Benchmarks** is a head-to-head. Each hook gets a panel that runs the same naive recursive `fib` twice, once in JavaScript and once in the TinyGo module, and reports both timings:
 
 - **`useWasm` panel** — both run on the main thread, one after the other. The frame counter in the header stalls for both, which is the point: wasm is faster, not non-blocking.
 - **`useWasmWorker` panel** — the wasm side uses `useWasmWorker`, the JavaScript side a plain module worker with the same message shape, so the only variable is the language. The frame counter keeps climbing throughout, and there is a Cancel button that kills both workers mid-run and restarts them.
 - **Imports panel** — `imports` on the main thread, `importsUrl` in the worker.
 
 Both sides are warmed up before timing, otherwise an un-JITted first call to the JavaScript version would lose by a mile and the comparison would mean nothing. See [Benchmarks](#benchmarks) for the figures this produces.
+
+**Examples** covers everything that is not a number — arrays, strings and objects — with the source beside each live result. See [Passing more than numbers](#passing-more-than-numbers).
 
 ---
 
