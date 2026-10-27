@@ -16,11 +16,11 @@
   "author": "Kez Anwar",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kezanwar/react-use-wasm.git"
+    "url": "git+https://github.com/Kezanwar/react-use-wasm.git"
   },
-  "homepage": "https://github.com/kezanwar/react-use-wasm#readme",
+  "homepage": "https://github.com/Kezanwar/react-use-wasm#readme",
   "bugs": {
-    "url": "https://github.com/kezanwar/react-use-wasm/issues"
+    "url": "https://github.com/Kezanwar/react-use-wasm/issues"
   },
   "type": "module",
   "sideEffects": false,
@@ -45,12 +45,12 @@
   "scripts": {
     "build": "tsup",
     "dev": "pnpm --filter react-use-wasm-demo dev",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && pnpm --filter react-use-wasm-demo exec tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:browser": "playwright test",
     "build:wasm": "sh scripts/build-wasm.sh",
-    "inspect:wasm": "node scripts/inspect-wasm.mjs examples/react-demo/public/math.wasm --allow-imports env.log",
+    "inspect:wasm": "node scripts/inspect-wasm.mjs examples/react-demo/public/math.wasm --allow-imports env.log && node scripts/inspect-wasm.mjs examples/react-demo/public/memory.wasm",
     "prepublishOnly": "pnpm build && pnpm test"
   },
   "peerDependencies": {

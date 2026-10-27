@@ -1,5 +1,8 @@
-// Package main is the example wasm module used by the react-use-wasm demo
-// and tests.
+// Package main builds math.wasm: the numbers-in, numbers-out module behind
+// the demo's Benchmarks tab.
+//
+// Kept deliberately tiny. See memory/ for the linear-memory module, and
+// USAGE.md for why the two are not one.
 //
 // Build with TinyGo, NOT the standard Go toolchain:
 //

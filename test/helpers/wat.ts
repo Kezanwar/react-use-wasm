@@ -28,9 +28,19 @@ export async function watToWasm(name: string): Promise<Uint8Array<ArrayBuffer>> 
   }
 }
 
-/** The committed TinyGo-built example module. */
+/**
+ * The two committed TinyGo-built example modules. They are separate because
+ * V8 stops top-tiering a wasm module once it grows past a few kB, which cost
+ * the fib benchmark about a third of its speed when they were one. See
+ * USAGE.md.
+ */
 export const MATH_WASM_PATH = resolve(root, "examples/react-demo/public/math.wasm");
+export const MEMORY_WASM_PATH = resolve(root, "examples/react-demo/public/memory.wasm");
 
 export async function mathWasmBytes(): Promise<Uint8Array<ArrayBuffer>> {
   return Uint8Array.from(await readFile(MATH_WASM_PATH));
+}
+
+export async function memoryWasmBytes(): Promise<Uint8Array<ArrayBuffer>> {
+  return Uint8Array.from(await readFile(MEMORY_WASM_PATH));
 }

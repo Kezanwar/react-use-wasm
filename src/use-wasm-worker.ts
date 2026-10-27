@@ -70,11 +70,16 @@ function defaultWorkerUrl(): string {
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
 
+/**
+ * `isReady` carries a literal type per branch so it works as a second
+ * discriminant alongside `status`, and narrows after destructuring. See the
+ * same note on UseWasmState.
+ */
 export type UseWasmWorkerState =
-  | { status: "idle"; error: null }
-  | { status: "loading"; error: null }
-  | { status: "ready"; error: null }
-  | { status: "error"; error: Error };
+  | { status: "idle"; isReady: false; error: null }
+  | { status: "loading"; isReady: false; error: null }
+  | { status: "ready"; isReady: true; error: null }
+  | { status: "error"; isReady: false; error: Error };
 
 export interface UseWasmWorkerOptions {
   /**
@@ -102,7 +107,6 @@ export interface UseWasmWorkerHelpers<T> {
     name: K,
     ...args: Parameters<Fn<T, K>>
   ) => Promise<Awaited<ReturnType<Fn<T, K>>>>;
-  isReady: boolean;
   /** Start a fresh worker (re-fetches the module). Also restarts after terminate(). */
   reload: () => void;
   /** Kill the worker immediately, e.g. to cancel a runaway call. Pending calls reject. */
@@ -118,9 +122,9 @@ type SerializedError = { name: string; message: string; stack?: string };
 /* Hook                                                                */
 /* ------------------------------------------------------------------ */
 
-const IDLE = { status: "idle", error: null } as const;
-const LOADING = { status: "loading", error: null } as const;
-const READY = { status: "ready", error: null } as const;
+const IDLE = { status: "idle", isReady: false, error: null } as const;
+const LOADING = { status: "loading", isReady: false, error: null } as const;
+const READY = { status: "ready", isReady: true, error: null } as const;
 
 function toError(e: SerializedError): Error {
   const err = new Error(e.message);
@@ -179,7 +183,7 @@ export function useWasmWorker<T extends object = WebAssembly.Exports>(
     const fail = (error: Error) => {
       if (!isCurrent()) return;
       readyRef.current = false;
-      setState({ status: "error", error });
+      setState({ status: "error", isReady: false, error });
     };
 
     worker.onmessage = (event: MessageEvent) => {
@@ -283,11 +287,5 @@ export function useWasmWorker<T extends object = WebAssembly.Exports>(
     setReloadKey((k) => k + 1);
   }, []);
 
-  return {
-    ...state,
-    call,
-    isReady: state.status === "ready",
-    reload,
-    terminate,
-  } as UseWasmWorkerResult<T>;
+  return { ...state, call, reload, terminate } as UseWasmWorkerResult<T>;
 }

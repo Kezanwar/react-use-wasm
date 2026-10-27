@@ -1,112 +1,247 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Two accent colours carry meaning throughout the demo and are used
+ * nowhere else:
+ *   js   = amber,  the JavaScript side of every comparison
+ *   wasm = violet, WebAssembly's own brand colour (#654FF0)
+ */
 :root {
-  color-scheme: light dark;
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  --radius: 0.7rem;
+
+  --background: oklch(0.99 0.004 280);
+  --foreground: oklch(0.21 0.02 280);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 280);
+  --primary: oklch(0.54 0.23 285);
+  --primary-foreground: oklch(0.99 0.004 280);
+  --secondary: oklch(0.96 0.01 280);
+  --secondary-foreground: oklch(0.25 0.02 280);
+  --muted: oklch(0.96 0.01 280);
+  --muted-foreground: oklch(0.53 0.02 280);
+  --accent: oklch(0.95 0.03 285);
+  --accent-foreground: oklch(0.35 0.14 285);
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.92 0.01 280);
+  --input: oklch(0.92 0.01 280);
+  --ring: oklch(0.54 0.23 285);
+
+  --js: oklch(0.68 0.15 85);
+  --js-soft: oklch(0.96 0.045 88);
+  --wasm: oklch(0.54 0.23 285);
+  --wasm-soft: oklch(0.96 0.03 285);
+  /* Inline code in prose. Deliberately a redder orange than --js, which is
+     a gold, so the two never read as the same thing. */
+  --code: oklch(0.56 0.16 45);
+
+  /* Syntax highlighting. Keyword violet deliberately matches --wasm so the
+     blocks sit in the same world as the rest of the page. */
+  --syn-plain: oklch(0.3 0.02 280);
+  --syn-comment: oklch(0.6 0.02 280);
+  --syn-keyword: oklch(0.52 0.21 290);
+  --syn-string: oklch(0.5 0.13 150);
+  --syn-number: oklch(0.56 0.16 45);
+  --syn-function: oklch(0.5 0.17 255);
+  --syn-class: oklch(0.5 0.13 60);
+  --syn-punct: oklch(0.58 0.02 280);
 }
 
-body {
-  margin: 0;
-  padding: 2rem 1rem;
+.dark {
+  --background: oklch(0.17 0.015 280);
+  --foreground: oklch(0.96 0.005 280);
+  --card: oklch(0.21 0.018 280);
+  --card-foreground: oklch(0.96 0.005 280);
+  --popover: oklch(0.21 0.018 280);
+  --popover-foreground: oklch(0.96 0.005 280);
+  --primary: oklch(0.7 0.18 288);
+  --primary-foreground: oklch(0.18 0.02 280);
+  --secondary: oklch(0.27 0.02 280);
+  --secondary-foreground: oklch(0.96 0.005 280);
+  --muted: oklch(0.27 0.02 280);
+  --muted-foreground: oklch(0.69 0.015 280);
+  --accent: oklch(0.3 0.04 285);
+  --accent-foreground: oklch(0.9 0.05 285);
+  --destructive: oklch(0.65 0.2 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.7 0.18 288);
+
+  --js: oklch(0.82 0.14 90);
+  --js-soft: oklch(0.3 0.05 88);
+  --wasm: oklch(0.72 0.17 288);
+  --wasm-soft: oklch(0.3 0.06 288);
+  --code: oklch(0.76 0.13 50);
+
+  --syn-plain: oklch(0.9 0.01 280);
+  --syn-comment: oklch(0.58 0.02 280);
+  --syn-keyword: oklch(0.76 0.15 292);
+  --syn-string: oklch(0.78 0.14 152);
+  --syn-number: oklch(0.78 0.13 52);
+  --syn-function: oklch(0.76 0.13 250);
+  --syn-class: oklch(0.82 0.11 85);
+  --syn-punct: oklch(0.65 0.02 280);
 }
 
-main {
-  max-width: 44rem;
-  margin: 0 auto;
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-js: var(--js);
+  --color-js-soft: var(--js-soft);
+  --color-wasm: var(--wasm);
+  --color-wasm-soft: var(--wasm-soft);
+  --color-code: var(--code);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-h1 {
-  margin-bottom: 0.25rem;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Numbers in tables and timings should not jitter as they change. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * Inline code in prose is orange everywhere, so an identifier is always
+   * visually a thing you could type. Code *blocks* opt out: they set their
+   * own colour and would otherwise be a wall of orange.
+   */
+  code {
+    @apply font-mono;
+    font-size: 0.9em;
+    color: var(--code);
+  }
+
+  pre code {
+    color: inherit;
+    font-size: inherit;
+  }
 }
 
-.sub {
-  margin-top: 0;
-  opacity: 0.75;
+/* ------------------------------------------------------------------ */
+/* Syntax highlighting                                                  */
+/*                                                                      */
+/* prism-react-renderer is given an empty theme so it emits token       */
+/* classNames and no inline styles. Colouring happens here instead, so  */
+/* it follows the palette and flips with dark mode for free.            */
+/*                                                                      */
+/* ORDER MATTERS. Prism puts several classes on one token, e.g. a       */
+/* method call is "method function property-access". These rules are    */
+/* all single-class, so they have equal specificity and the last one    */
+/* wins. Least specific meaning first, most specific last.              */
+/* ------------------------------------------------------------------ */
+
+.code-block {
+  color: var(--syn-plain);
 }
 
-section {
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
+.code-block .token.comment,
+.code-block .token.prolog,
+.code-block .token.cdata {
+  color: var(--syn-comment);
+  font-style: italic;
 }
 
-h2 {
-  margin-top: 0;
-  font-size: 1.1rem;
+.code-block .token.punctuation {
+  color: var(--syn-punct);
 }
 
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  padding: 0.1em 0.35em;
-  border-radius: 0.25em;
+/* Plain by default: `exports.memory.buffer` should not light up. */
+.code-block .token.property-access,
+.code-block .token.attr-name,
+.code-block .token.parameter {
+  color: var(--syn-plain);
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
+.code-block .token.keyword,
+.code-block .token.operator,
+.code-block .token.atrule {
+  color: var(--syn-keyword);
 }
 
-button {
-  font: inherit;
-  padding: 0.35rem 0.8rem;
-  border-radius: 0.4rem;
-  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
+.code-block .token.string,
+.code-block .token.char,
+.code-block .token.attr-value,
+.code-block .token.regex {
+  color: var(--syn-string);
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: default;
+.code-block .token.number,
+.code-block .token.boolean,
+.code-block .token.constant,
+.code-block .token.symbol {
+  color: var(--syn-number);
 }
 
-input,
-select {
-  font: inherit;
-  padding: 0.25rem 0.4rem;
-  border-radius: 0.4rem;
-  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  background: transparent;
-  color: inherit;
+.code-block .token.class-name,
+.code-block .token.known-class-name,
+.code-block .token.builtin,
+.code-block .token.tag {
+  color: var(--syn-class);
 }
 
-input[type="number"] {
-  width: 6rem;
+/* Last, so a token carrying "method function property-access" reads as a
+   call rather than inheriting the plain property colour above. */
+.code-block .token.function,
+.code-block .token.method {
+  color: var(--syn-function);
 }
 
-.hint {
-  opacity: 0.65;
-  font-size: 0.9rem;
+/* Prism's JSX grammar tags the `from` in `Array.from(...)` as an import
+   keyword. Two classes beats one, so this wins wherever it appears. These
+   snippets contain no import statements for it to get wrong. */
+.code-block .token.keyword.module {
+  color: var(--syn-function);
 }
 
-.error {
-  color: #c0392b;
-}
-
-.heartbeat {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 1.5rem;
-}
-
-.spinner {
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
+@keyframes spin-slow {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

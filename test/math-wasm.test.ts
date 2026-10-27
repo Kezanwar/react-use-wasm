@@ -6,9 +6,11 @@ import {
 import { mathWasmBytes } from "./helpers/wat";
 
 /**
- * Checks the committed examples/react-demo/public/math.wasm against the
- * MathExports interface the demo and README are written against. If someone
- * edits math.go and rebuilds without updating the interface, this fails.
+ * Checks the committed math.wasm against the MathExports interface the demo
+ * and README are written against. If someone edits the Go and rebuilds
+ * without updating the interface, this fails.
+ *
+ * The linear-memory module is a separate binary with its own test file.
  */
 
 async function instantiate() {
@@ -16,10 +18,17 @@ async function instantiate() {
   const { instance, module } = await WebAssembly.instantiate(await mathWasmBytes(), {
     env: { log: (x: number) => void logged.push(x) },
   });
-  return { exports: instance.exports as unknown as MathExports, module, logged };
+  const exports = instance.exports as unknown as MathExports;
+  return { exports, module, logged };
 }
 
-describe("examples/go math.wasm", () => {
+async function ready() {
+  const handle = await instantiate();
+  handle.exports._initialize();
+  return handle;
+}
+
+describe("examples/go/math -> math.wasm", () => {
   it("imports only env.log, so there are no WASI requirements", async () => {
     const { module } = await instantiate();
     expect(
@@ -50,10 +59,11 @@ describe("examples/go math.wasm", () => {
     const { exports } = await instantiate();
     expect(exports.memory).toBeInstanceOf(WebAssembly.Memory);
   });
+});
 
+describe("numbers in, numbers out", () => {
   it("returns correct values", async () => {
-    const { exports, logged } = await instantiate();
-    exports._initialize();
+    const { exports, logged } = await ready();
 
     expect(exports.add(2, 3)).toBe(5);
     expect(exports.add(-4, 4)).toBe(0);
@@ -75,8 +85,7 @@ describe("examples/go math.wasm", () => {
   });
 
   it("int32 and float64 both arrive as plain JS numbers", async () => {
-    const { exports } = await instantiate();
-    exports._initialize();
+    const { exports } = await ready();
     expect(typeof exports.add(1, 2)).toBe("number");
     expect(typeof exports.scale(1, 2)).toBe("number");
   });

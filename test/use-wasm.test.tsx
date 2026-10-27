@@ -55,6 +55,22 @@ function serve(
 }
 
 describe("useWasm", () => {
+  it("keeps isReady in step with status, and exposes exports directly", async () => {
+    serve({ "/math.wasm": mathBytes });
+
+    const { result } = renderHook(() => useWasm<MathExports>("/math.wasm"));
+
+    // isReady is stored in the state union rather than derived at return
+    // time, so this invariant is what stops the two drifting.
+    expect(result.current.isReady).toBe(result.current.status === "ready");
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(result.current.isReady).toBe(true);
+
+    // call() is optional on the main thread; the instance is right there.
+    expect(result.current.exports!.add(2, 3)).toBe(5);
+    expect(result.current.exports!.memory).toBeInstanceOf(WebAssembly.Memory);
+  });
+
   it("goes loading -> ready and calls exports", async () => {
     serve({ "/math.wasm": mathBytes });
 
