@@ -1,55 +1,85 @@
 import { useState } from "react";
 import { useWasmWorker } from "react-use-wasm";
 import type { MathExports } from "./math-exports";
+import { useJsWorker } from "./useJsWorker";
+import { BenchCard, Verdict } from "./BenchCard";
 
-type Heavy = "fib" | "countPrimes";
+const WARMUP_N = 24;
 
 /**
  * useWasmWorker: the module lives in a Web Worker, so `call` returns a
- * Promise and the heavy work never touches the main thread. The frame
- * counter in the header keeps climbing throughout.
+ * Promise and the main thread stays free.
+ *
+ * Both sides here run in a worker. The only difference being measured is the
+ * language, not the threading, which is the fair comparison: the frame
+ * counter in the header keeps climbing for both.
  */
 export function WorkerPanel() {
-  const [fn, setFn] = useState<Heavy>("fib");
   const [n, setN] = useState(40);
-  const [result, setResult] = useState<string | null>(null);
-  const [elapsed, setElapsed] = useState<number | null>(null);
+  const [jsMs, setJsMs] = useState<number | null>(null);
+  const [wasmMs, setWasmMs] = useState<number | null>(null);
+  const [jsValue, setJsValue] = useState<number | null>(null);
+  const [wasmValue, setWasmValue] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
 
-  const { status, error, call, reload, terminate } = useWasmWorker<MathExports>("/math.wasm", {
+  const wasm = useWasmWorker<MathExports>("/math.wasm", {
     importsUrl: "/wasm-imports.js",
   });
+  const js = useJsWorker("/js-fib-worker.js");
+
+  const ready = wasm.status === "ready" && js.isReady;
 
   const run = async () => {
     setBusy(true);
-    setResult(null);
-    setElapsed(null);
-    const started = performance.now();
+    setNote(null);
+    setJsMs(null);
+    setWasmMs(null);
+    setJsValue(null);
+    setWasmValue(null);
+
     try {
-      const value = await call(fn, n);
-      setResult(String(value));
-      setElapsed(Math.round(performance.now() - started));
+      // Warm each worker up, same as the main-thread panel.
+      await js.call(WARMUP_N);
+      await wasm.call("fib", WARMUP_N);
+
+      // Sequentially, so the two are not competing for cores.
+      const t0 = performance.now();
+      const jsResult = await js.call(n);
+      const jsElapsed = performance.now() - t0;
+      setJsValue(jsResult);
+      setJsMs(jsElapsed);
+
+      const t1 = performance.now();
+      const wasmResult = await wasm.call("fib", n);
+      const wasmElapsed = performance.now() - t1;
+      setWasmValue(wasmResult);
+      setWasmMs(wasmElapsed);
     } catch (err) {
-      // Cancelling rejects the pending call, which lands here.
-      setResult(err instanceof Error ? `cancelled: ${err.message}` : String(err));
+      // Cancelling rejects whichever call was in flight, landing here.
+      setNote(err instanceof Error ? `cancelled: ${err.message}` : String(err));
     } finally {
       setBusy(false);
     }
   };
 
-  // Cancelling means killing the worker mid-call, then starting a fresh one.
-  // There is no other way to interrupt a running wasm function.
+  // A running call cannot be interrupted. Cancelling means killing both
+  // workers and starting fresh ones.
   const cancel = () => {
-    terminate();
-    reload();
+    js.terminate();
+    wasm.terminate();
+    js.reload();
+    wasm.reload();
   };
 
-  if (status === "error") {
+  if (wasm.status === "error") {
     return (
       <section>
-        <h2>useWasmWorker (Web Worker)</h2>
+        <h2>
+          <code>useWasmWorker</code> — Web Worker
+        </h2>
         <p className="error">
-          Failed: {error.message} <button onClick={reload}>Retry</button>
+          Failed: {wasm.error.message} <button onClick={wasm.reload}>Retry</button>
         </p>
       </section>
     );
@@ -57,57 +87,72 @@ export function WorkerPanel() {
 
   return (
     <section>
-      <h2>useWasmWorker (Web Worker)</h2>
+      <h2>
+        <code>useWasmWorker</code> — Web Worker
+      </h2>
       <p>
-        Async <code>call</code>. The page stays interactive while this runs.
+        <code>call</code> returns a Promise and the work happens off the main
+        thread, so the page stays interactive throughout.
       </p>
 
       <div className="row">
         <label>
-          function:{" "}
-          <select
-            value={fn}
-            data-testid="worker-fn"
-            onChange={(e) => setFn(e.target.value as Heavy)}
-          >
-            <option value="fib">fib</option>
-            <option value="countPrimes">countPrimes</option>
-          </select>
-        </label>
-        <label>
-          n:{" "}
+          fib(n), n ={" "}
           <input
             type="number"
             value={n}
+            min={0}
+            max={45}
             data-testid="worker-n"
             onChange={(e) => setN(Number(e.target.value))}
           />
         </label>
-        <button onClick={run} disabled={status !== "ready" || busy} data-testid="worker-run">
-          {status === "ready" ? "Compute" : "Loading wasm…"}
+        <button onClick={run} disabled={!ready || busy} data-testid="worker-run">
+          {ready ? "Run both" : "Loading workers…"}
         </button>
         {busy && (
           <button onClick={cancel} data-testid="worker-cancel">
             Cancel
           </button>
         )}
+        {busy && (
+          <span data-testid="worker-busy">Computing… (the page stays responsive)</span>
+        )}
       </div>
 
-      {busy && <p data-testid="worker-busy">Computing… (the page stays responsive)</p>}
+      <div className="bench-grid">
+        <BenchCard
+          label="JavaScript worker"
+          sub="plain JS module worker"
+          ms={jsMs}
+          value={jsValue}
+          busy={busy && jsMs === null}
+          faster={jsMs !== null && wasmMs !== null && jsMs < wasmMs}
+          testId="worker-js"
+        />
+        <BenchCard
+          label="Wasm worker"
+          sub="useWasmWorker, TinyGo module"
+          ms={wasmMs}
+          value={wasmValue}
+          busy={busy && jsMs !== null && wasmMs === null}
+          faster={jsMs !== null && wasmMs !== null && wasmMs < jsMs}
+          testId="worker-wasm"
+        />
+      </div>
 
-      {result !== null && (
-        <p data-testid="worker-result">
-          <code>
-            {fn}({n})
-          </code>{" "}
-          = <strong>{result}</strong>
-          {elapsed !== null && <span className="hint"> ({elapsed} ms in the worker)</span>}
+      <Verdict js={jsMs} wasm={wasmMs} testId="worker-verdict" />
+
+      {note && (
+        <p className="error" data-testid="worker-note">
+          {note}
         </p>
       )}
 
       <p className="hint">
-        Try fib(40), or countPrimes(5000000). Compare with the main-thread
-        panel at the same n.
+        Timings are wall clock from the main thread, so they include the
+        postMessage round trip (well under a millisecond at these sizes). Try
+        n = 42, then hit Cancel halfway.
       </p>
     </section>
   );

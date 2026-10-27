@@ -16,11 +16,11 @@
   "author": "Kez Anwar",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kezanwar/react-use-wasm.git"
+    "url": "git+https://github.com/Kezanwar/react-use-wasm.git"
   },
-  "homepage": "https://github.com/kezanwar/react-use-wasm#readme",
+  "homepage": "https://github.com/Kezanwar/react-use-wasm#readme",
   "bugs": {
-    "url": "https://github.com/kezanwar/react-use-wasm/issues"
+    "url": "https://github.com/Kezanwar/react-use-wasm/issues"
   },
   "type": "module",
   "sideEffects": false,

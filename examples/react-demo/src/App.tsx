@@ -9,8 +9,9 @@ export function App() {
       <header>
         <h1>react-use-wasm</h1>
         <p className="sub">
-          Typed React hooks for WebAssembly. The module below is{" "}
-          <code>examples/go/math.go</code>, built with TinyGo for{" "}
+          Typed React hooks for WebAssembly. Each section runs the same naive
+          recursive <code>fib</code> twice, once in JavaScript and once in the{" "}
+          <code>examples/go/math.go</code> module built with TinyGo for{" "}
           <code>wasm-unknown</code>.
         </p>
         <Heartbeat />

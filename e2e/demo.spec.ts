@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+const MS = /\d+(\.\d+)? ms/;
+/** toLocaleString inserts group separators, so match the digits loosely. */
+const digits = (n: number) => new RegExp(String(n).split("").join("[,.\\s]?"));
+
 test("serves .wasm as application/wasm, so compileStreaming is used", async ({ request }) => {
   const res = await request.get("/math.wasm");
   expect(res.status()).toBe(200);
@@ -9,12 +13,31 @@ test("serves .wasm as application/wasm, so compileStreaming is used", async ({ r
 test("useWasm computes synchronously during render", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByTestId("add-result")).toContainText("5");
-  await expect(page.getByTestId("scale-result")).toContainText("10");
-  await expect(page.getByTestId("main-fib-result")).toContainText("75025"); // fib(25)
+  await expect(page.getByTestId("add-result")).toHaveText("5");
+  await expect(page.getByTestId("scale-result")).toHaveText("10");
 });
 
-test("useWasmWorker runs fib(40) without blocking the main thread", async ({ page }) => {
+test("useWasm panel benchmarks JS against wasm on the main thread", async ({ page }) => {
+  await page.goto("/");
+
+  const run = page.getByTestId("main-run");
+  await expect(run).toBeEnabled({ timeout: 15_000 });
+
+  await page.getByTestId("main-n").fill("30");
+  await run.click();
+
+  // Both sides report a timing...
+  await expect(page.getByTestId("main-js-ms")).toHaveText(MS, { timeout: 30_000 });
+  await expect(page.getByTestId("main-wasm-ms")).toHaveText(MS, { timeout: 30_000 });
+
+  // ...and, more importantly, the same answer.
+  await expect(page.getByTestId("main-js-value")).toHaveText(digits(832040));
+  await expect(page.getByTestId("main-wasm-value")).toHaveText(digits(832040));
+
+  await expect(page.getByTestId("main-verdict")).toContainText("faster on this run");
+});
+
+test("useWasmWorker benchmarks both workers without blocking the main thread", async ({ page }) => {
   await page.goto("/");
 
   const run = page.getByTestId("worker-run");
@@ -22,49 +45,47 @@ test("useWasmWorker runs fib(40) without blocking the main thread", async ({ pag
 
   await page.getByTestId("worker-n").fill("40");
 
-  const framesBefore = Number(
-    (await page.getByTestId("frames").innerText()).replace(/\D/g, "")
-  );
+  const frames = async () =>
+    Number((await page.getByTestId("frames").innerText()).replace(/\D/g, ""));
+  const before = await frames();
 
   await run.click();
   await expect(page.getByTestId("worker-busy")).toBeVisible();
 
-  await expect(page.getByTestId("worker-result")).toContainText("102334155", {
-    timeout: 30_000,
-  });
+  await expect(page.getByTestId("worker-js-ms")).toHaveText(MS, { timeout: 60_000 });
+  await expect(page.getByTestId("worker-wasm-ms")).toHaveText(MS, { timeout: 60_000 });
 
-  const framesAfter = Number(
-    (await page.getByTestId("frames").innerText()).replace(/\D/g, "")
-  );
+  await expect(page.getByTestId("worker-js-value")).toHaveText(digits(102334155));
+  await expect(page.getByTestId("worker-wasm-value")).toHaveText(digits(102334155));
 
   // The whole point of the worker hook: frames kept painting throughout a
-  // call that takes roughly half a second of solid compute.
-  expect(framesAfter - framesBefore).toBeGreaterThan(5);
+  // run that takes well over a second of solid compute.
+  expect((await frames()) - before).toBeGreaterThan(5);
 });
 
-test("Cancel terminates a running call and the worker comes back", async ({ page }) => {
+test("Cancel terminates a running call and both workers come back", async ({ page }) => {
   await page.goto("/");
 
   const run = page.getByTestId("worker-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
 
-  await page.getByTestId("worker-fn").selectOption("countPrimes");
-  await page.getByTestId("worker-n").fill("200000000");
+  await page.getByTestId("worker-n").fill("45");
   await run.click();
 
   const cancel = page.getByTestId("worker-cancel");
   await expect(cancel).toBeVisible();
   await cancel.click();
 
-  await expect(page.getByTestId("worker-result")).toContainText("cancelled");
-  await expect(page.getByTestId("worker-result")).toContainText("worker terminated");
+  await expect(page.getByTestId("worker-note")).toContainText("cancelled");
+  await expect(page.getByTestId("worker-note")).toContainText("terminated");
 
-  // reload() spun up a fresh worker, so the panel is usable again.
+  // Fresh workers were started, so the panel is usable again.
   await expect(run).toBeEnabled({ timeout: 15_000 });
-  await page.getByTestId("worker-fn").selectOption("fib");
   await page.getByTestId("worker-n").fill("20");
   await run.click();
-  await expect(page.getByTestId("worker-result")).toContainText("6765");
+  await expect(page.getByTestId("worker-wasm-value")).toHaveText(digits(6765), {
+    timeout: 30_000,
+  });
 });
 
 test("imports reach the module on both threads", async ({ page }) => {

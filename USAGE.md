@@ -19,7 +19,7 @@ the decisions that are easy to undo by accident.
 `use-wasm` was already taken on npm (v0.0.3, published by raphamorim over a
 year ago), hence the `react-use-wasm` name. The three GitHub URLs in
 `package.json` (`repository`, `homepage`, `bugs`) point at
-`github.com/kezanwar/react-use-wasm`, which does not exist yet.
+`github.com/Kezanwar/react-use-wasm`, which does not exist yet.
 
 ---
 
@@ -59,7 +59,10 @@ e2e/                   Playwright specs (real browser only)
 examples/
   go/                  math.go + go.mod, the TinyGo source
   react-demo/          Vite + React app, consumes the package via workspace link
-    public/math.wasm   committed, so the demo and tests work without TinyGo
+    public/math.wasm           committed, so the demo and tests work without TinyGo
+    public/js-fib-worker.js    the JavaScript side of the worker benchmark
+    src/fib.ts                 the JavaScript side of the main-thread benchmark
+    src/useJsWorker.ts         demo-only hook, shaped like useWasmWorker
 scripts/
   build-wasm.sh        TinyGo build + import audit
   inspect-wasm.mjs     stands in for `wasm-objdump -x`, no wabt install needed
@@ -111,11 +114,29 @@ most likely to break, but **not**:
 - structured-cloning a `WebAssembly.Module` across the thread boundary
 - the main thread genuinely staying free during a long call
 
-`pnpm test:browser` covers all three, in Chromium. It checks `fib(40)` end to
-end while asserting the demo's frame counter keeps advancing, Cancel
-(`terminate()` + `reload()`) mid-call and recovery afterwards, imports on both
-threads, and that Vite serves `/math.wasm` as `Content-Type: application/wasm`
-(which is what makes the hooks take the `compileStreaming` path).
+`pnpm test:browser` covers all three, in Chromium — 6 specs. It runs both
+benchmark panels end to end and asserts the two implementations agree on the
+answer, that the frame counter keeps advancing during the worker run, that
+Cancel (`terminate()` + `reload()`) kills a call mid-flight and both workers
+come back, that imports work on both threads, and that Vite serves
+`/math.wasm` as `Content-Type: application/wasm` (which is what makes the
+hooks take the `compileStreaming` path).
+
+### The demo is a benchmark
+
+Each hook's panel runs the same naive recursive `fib` twice, in JavaScript and
+in the TinyGo module, and shows both timings. Two things to preserve if you
+change it:
+
+1. **Both sides are warmed up at n = 24 before timing.** Without that, the
+   first JavaScript call is un-JITted and loses by a mile, which would make
+   the comparison a lie.
+2. **The two runs are sequential, not parallel**, so they are not competing
+   for cores.
+
+Measured in Chromium on an M-series Mac: wasm comes out roughly **2.8–3.3×**
+faster. That is the honest number — this is not a 10× story, and the UI
+computes the ratio at runtime rather than claiming one.
 
 ### Not covered anywhere
 
@@ -204,7 +225,7 @@ roughly halve it, at the cost of debuggability.
 publish a **GitHub release**. Prerequisites:
 
 1. **Create the repo and push.** `brew install gh`, `gh auth login`, then
-   `gh repo create kezanwar/react-use-wasm --public --source=. --push`.
+   `gh repo create Kezanwar/react-use-wasm --public --source=. --push`.
 2. **Add the npm token.** On npmjs.com: Access Tokens → Generate New Token →
    **Granular**, read + write on `react-use-wasm`. Then in GitHub:
    **Settings → Secrets and variables → Actions → New repository secret**,

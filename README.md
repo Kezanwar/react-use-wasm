@@ -127,7 +127,9 @@ Nothing validates your interface against the real module at runtime, so it is wo
 
 Rough rule: **if a single call takes longer than about 50 ms, use `useWasmWorker`.**
 
-At 60 fps you have 16 ms per frame. A synchronous wasm call on the main thread cannot be interrupted, so anything past a frame or two shows up as a dropped frame, a stuck animation or a button that does not respond. A `fib(40)` in the example module takes roughly 450 ms; that is half a second of completely frozen page.
+At 60 fps you have 16 ms per frame. A synchronous wasm call on the main thread cannot be interrupted, so anything past a frame or two shows up as a dropped frame, a stuck animation or a button that does not respond. A `fib(40)` in the example module takes about 240 ms in Chromium; that is a quarter of a second of completely frozen page.
+
+Note what this is *not* about. Moving to wasm buys you speed, not responsiveness. Measured in the demo below, the TinyGo build of naive recursive `fib` runs roughly **2.8× faster** than the same algorithm in JIT-compiled JavaScript — a real win, but `fib(40)` still blocks the page for 240 ms if you run it on the main thread. Only the worker hook fixes that.
 
 Use `useWasm` when calls are short and you want the result during render. Use `useWasmWorker` when they are not. Both can point at the same URL; the compiled module is cached and shared between them.
 
@@ -304,7 +306,24 @@ pnpm build:wasm    # rebuild examples/go/math.go with TinyGo
 pnpm test:browser  # Playwright against the demo in real Chromium
 ```
 
-The demo at [`examples/react-demo`](examples/react-demo) has a panel per hook plus an imports panel, and a frame counter in the header that visibly stalls when you block the main thread and keeps running when you do not.
+The demo at [`examples/react-demo`](examples/react-demo) is built around a head-to-head benchmark. Each hook gets a panel that runs the same naive recursive `fib` twice, once in JavaScript and once in the TinyGo module, and reports both timings:
+
+- **`useWasm` panel** — both run on the main thread, one after the other. The frame counter in the header stalls for both, which is the point: wasm is faster, not non-blocking.
+- **`useWasmWorker` panel** — the wasm side uses `useWasmWorker`, the JavaScript side a plain module worker with the same message shape, so the only variable is the language. The frame counter keeps climbing throughout, and there is a Cancel button that kills both workers mid-run and restarts them.
+- **Imports panel** — `imports` on the main thread, `importsUrl` in the worker.
+
+Both sides are warmed up before timing, otherwise an un-JITted first call to the JavaScript version would lose by a mile and the comparison would mean nothing.
+
+Measured in Chromium on an M-series Mac, for reference:
+
+| n  | JavaScript | WebAssembly |
+| -- | ---------- | ----------- |
+| 35 | 64 ms      | 22 ms       |
+| 38 | 267 ms     | 95 ms       |
+| 40 | 687 ms     | 239 ms      |
+| 42 | 1738 ms    | 624 ms      |
+
+Your numbers will differ. The ratio holds up better than the absolute figures.
 
 ---
 

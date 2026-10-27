@@ -10,7 +10,7 @@ body {
 }
 
 main {
-  max-width: 44rem;
+  max-width: 48rem;
   margin: 0 auto;
 }
 
@@ -109,4 +109,60 @@ input[type="number"] {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* --- benchmark cards ------------------------------------------------- */
+
+.bench-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 1rem 0 0.25rem;
+}
+
+@media (max-width: 34rem) {
+  .bench-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bench {
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.bench-faster {
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+.bench-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bench-ms {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  margin: 0.15rem 0 0.1rem;
+}
+
+.bench-pending {
+  font-size: 1rem;
+  opacity: 0.55;
+}
+
+.bench-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-bottom: 0.35rem;
+}
+
+.verdict {
+  margin: 0.35rem 0 0;
+  font-variant-numeric: tabular-nums;
 }
