@@ -50,7 +50,7 @@
     "test:watch": "vitest",
     "test:browser": "playwright test",
     "build:wasm": "sh scripts/build-wasm.sh",
-    "inspect:wasm": "node scripts/inspect-wasm.mjs examples/react-demo/public/math.wasm --allow-imports env.log",
+    "inspect:wasm": "node scripts/inspect-wasm.mjs examples/react-demo/public/math.wasm --allow-imports env.log && node scripts/inspect-wasm.mjs examples/react-demo/public/memory.wasm",
     "prepublishOnly": "pnpm build && pnpm test"
   },
   "peerDependencies": {

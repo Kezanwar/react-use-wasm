@@ -182,7 +182,7 @@ exports.free(ptr);
 
 Allocate, write, call with `(offset, length)`, read back, free. Every shape follows that pattern. The Examples tab of the demo runs all of them live with the source beside each one.
 
-**Your module has to export an allocator.** `alloc` and `free` above are ordinary exports you write yourself; wasm does not provide them. [`examples/go/memory.go`](examples/go/memory.go) has a demo-grade pair.
+**Your module has to export an allocator.** `alloc` and `free` above are ordinary exports you write yourself; wasm does not provide them. [`examples/go/memory/memory.go`](examples/go/memory/memory.go) has a demo-grade pair.
 
 **Returning something new needs two values, and wasm returns one.** The usual answer is to pack the offset and length into a single `i64` — which is why it arrives in JavaScript as a `bigint`:
 
@@ -226,7 +226,7 @@ Use `useWasm` when calls are short and you want the result during render. Use `u
 
 ## Benchmarks
 
-Naive recursive `fib`, the same algorithm on both sides: [`examples/go/math.go`](examples/go/math.go) built with TinyGo, against [`examples/react-demo/src/fib.ts`](examples/react-demo/src/fib.ts) in JavaScript. Chromium 156 on an Apple M-series Mac.
+Naive recursive `fib`, the same algorithm on both sides: [`examples/go/math/math.go`](examples/go/math/math.go) built with TinyGo, against [`examples/react-demo/src/fib.ts`](examples/react-demo/src/fib.ts) in JavaScript. Chromium 156 on an Apple M-series Mac.
 
 | n  | JavaScript | WebAssembly | speedup |
 | -- | ---------- | ----------- | ------- |
@@ -377,13 +377,20 @@ Standard Go (`GOOS=js GOARCH=wasm`) **does not work.** It exports nothing callab
 
 ## The Go example
 
-[`examples/go/math.go`](examples/go/math.go) is a small TinyGo module built for `wasm-unknown`, which produces a module with no WASI imports:
+[`examples/go`](examples/go) builds **two** TinyGo modules for `wasm-unknown`, a target that produces modules with no WASI imports:
 
 ```sh
 tinygo build -target=wasm-unknown -no-debug -o math.wasm .
 ```
 
-It exports two groups. Numbers in, numbers out: `add`, `fib`, `countPrimes`, `scale` and `logSum` (which calls back into the host via the `env.log` import). And, from [`memory.go`](examples/go/memory.go), the linear-memory protocol: `alloc`, `free`, `sumInt32`, `sortInt32`, `scaleFloat64`, `upperInPlace`, `reverseString`, `centroid` and `jsonStats`. Plus the `_initialize` TinyGo adds for you.
+| module | size | exports |
+| --- | --- | --- |
+| [`math/`](examples/go/math) → `math.wasm` | 1.1 kB | `add`, `fib`, `countPrimes`, `scale`, `logSum` (which calls the host's `env.log`) |
+| [`memory/`](examples/go/memory) → `memory.wasm` | 186 kB | `alloc`, `free`, `sumInt32`, `sortInt32`, `scaleFloat64`, `upperInPlace`, `reverseString`, `centroid`, `jsonStats` |
+
+Both also export `_initialize`, which TinyGo adds for you and the hooks call.
+
+**They are two modules on purpose, and the reason is worth knowing if you benchmark your own:** V8 only applies its top optimisation tier to a wasm module while it stays small. Identical `fib` bytecode ran 20 ms in the 1.1 kB module and 34 ms once the linear-memory code was bundled in with it — a third of the speed, from nothing but the module getting bigger. Forcing TurboFan with `--js-flags=--no-liftoff` brought both back to 21 ms, confirming the code was never the problem. `USAGE.md` has the full measurements.
 
 ```go
 //go:wasmimport env log
@@ -416,7 +423,7 @@ pnpm dev           # build the package, then the Vite demo on :5173
 pnpm test          # vitest: unit, worker protocol, SSR, and type tests
 pnpm typecheck     # tsc --noEmit across src, tests, e2e and the demo
 pnpm build         # tsup -> dist (ESM + CJS + .d.ts)
-pnpm build:wasm    # rebuild examples/go/math.go with TinyGo
+pnpm build:wasm    # rebuild both wasm modules from examples/go with TinyGo
 pnpm test:browser  # Playwright against the demo in real Chromium
 ```
 

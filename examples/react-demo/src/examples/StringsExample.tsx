@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Type } from "lucide-react";
 import { Js } from "@/components/Term";
-import type { MathExports } from "@/math-exports";
+import type { MemoryExports } from "@/memory-exports";
 import { encode, readString, takePackedString, unpack, withAlloc, writeBytes } from "@/lib/wasm-memory";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ const result = new TextDecoder().decode(
 exports.free(outPtr);
 exports.free(ptr);`;
 
-export function StringsExample({ e }: { e: MathExports }) {
+export function StringsExample({ e }: { e: MemoryExports }) {
   const [text, setText] = useState("hello wasm");
   const [upper, setUpper] = useState<string | null>(null);
   const [reversed, setReversed] = useState<string | null>(null);

@@ -57,11 +57,12 @@ test/
   helpers/wat.ts       .wat -> bytes, plus the path to the built math.wasm
 e2e/                   Playwright specs (real browser only)
 examples/
-  go/
-    math.go            numbers in, numbers out
-    memory.go          the linear-memory protocol (alloc/free, arrays, strings, structs, JSON)
+  go/                  two separate main packages, two separate .wasm files
+    math/math.go       numbers in, numbers out                         -> math.wasm,   1.1 kB
+    memory/memory.go   alloc/free, arrays, strings, structs, JSON      -> memory.wasm, 186 kB
   react-demo/          Vite + React + Tailwind v4 + shadcn/ui, linked via the workspace
     public/math.wasm           committed, so the demo and tests work without TinyGo
+    public/memory.wasm         likewise; only the Examples tab fetches it
     public/js-fib-worker.js    the JavaScript side of the worker benchmark
     src/pages/                 one per tab: Benchmarks, Examples
     src/panels/                the three Benchmarks panels
@@ -136,6 +137,7 @@ section "`call` or `exports`?" is the user-facing version of this.
 | `test/worker-protocol.test.ts` | node | `WASM_WORKER_SOURCE` run against a fake `self`: init, `_initialize`, calls, `data:`-URL imports, traps, non-function exports, calls before init |
 | `test/ssr.test.tsx` | node | import-time safety, `renderToString`, plus child Node processes where `window`/`document`/`Worker`/`location`/`fetch`/`URL.createObjectURL` all throw |
 | `test/math-wasm.test.ts` | node | the committed `math.wasm` against the `MathExports` interface |
+| `test/memory-wasm.test.ts` | node | the committed `memory.wasm` against `MemoryExports`, and every step of the linear-memory protocol |
 | `test/dist-output.test.ts` | node | the published artefact (see Build above) |
 | `e2e/demo.spec.ts` | Chromium | the real browser, below |
 
@@ -183,7 +185,7 @@ computes the ratio at runtime rather than claiming one.
 
 ## The wasm example
 
-[examples/go/math.go](examples/go/math.go), built with TinyGo:
+[examples/go](examples/go), two packages, built with TinyGo:
 
 ```sh
 tinygo build -target=wasm-unknown -no-debug -o math.wasm .
@@ -194,7 +196,7 @@ machine that also required `brew trust tinygo-org/tools`, which is a persistent
 Homebrew setting.
 
 **The built `math.wasm` is committed**, so the demo, the tests and CI all work
-without TinyGo installed. Only rerun `pnpm build:wasm` when `math.go` changes.
+without TinyGo installed. Only rerun `pnpm build:wasm` when the Go changes.
 
 Two things to remember if you touch it:
 
@@ -219,21 +221,46 @@ They are harmless and simply not declared in `MathExports`.
 
 ---
 
-## The demo module is 186 kB, on purpose
+## Why there are two wasm modules
 
-`math.wasm` was 1.1 kB when it only did arithmetic. Adding the
-linear-memory exports took it to 15 kB; adding `encoding/json` took it to
-186 kB, because Go's JSON needs the reflection machinery.
+`math.wasm` is 1.1 kB and `memory.wasm` is 186 kB, built from two separate
+`main` packages. **Do not merge them.**
 
-**That is deliberate and should stay.** The Examples tab shows objects passed
-two ways — a fixed struct layout that costs nothing, and JSON that costs
-150 kB — and the point is lost if the expensive one is removed. The binary is
-a demo asset: `files: ["dist"]` means it never reaches anyone installing the
-package.
+They were one module briefly, and the fib benchmark dropped from about 2.9x
+faster than JavaScript to about 1.7x. The cause is not the Go code and not
+the download:
 
-If you do want it small again, drop `jsonStats` and the `encoding/json`
-import from `examples/go/memory.go`, and remove the JSON half of
-`src/examples/ObjectsExample.tsx`.
+- The `fib` **bytecode is byte-for-byte identical** in both builds. Only the
+  function index differs. Verified by disassembling with `wabt`.
+- A 20 kB build (memory exports, no `encoding/json`) is **exactly as slow as
+  the 186 kB one**, so it is not proportional to size either.
+
+It is V8's compilation tiers. Chromium compiles wasm with Liftoff (quick to
+compile, slow code) and then re-compiles hot functions with TurboFan. Forcing
+each tier makes every module identical, which is the proof:
+
+| `--js-flags=` | 1.1 kB | 20 kB | 186 kB |
+| --- | --- | --- | --- |
+| `--liftoff-only` | 1.11x | 1.14x | 1.13x |
+| *(default)* | **3.07x** | 1.80x | 1.78x |
+| `--no-liftoff` | 2.81x | 2.74x | 2.78x |
+
+Only the tiny module reaches the top tier under the default heuristics. The
+confirming detail: `--no-wasm-dynamic-tiering` drags the 1.1 kB module down
+to 1.74x, matching the others, so the fast number was specifically a
+dynamic-tiering effect that only a very small module gets.
+
+The threshold sits somewhere between 1.1 kB and 20 kB. These flags do not
+expose exactly where, and it is a V8 heuristic that can change between
+versions.
+
+**Practical consequence, and the reason this is written down:** a wasm
+micro-benchmark measures your module's size as much as your code. Keep the
+module under test minimal, or force the tier, or you are measuring V8's
+compilation policy.
+
+Reproduce it with `pnpm exec playwright test`, adding a spec that launches
+`chromium.launch({ args: ["--js-flags=--no-liftoff"] })`.
 
 ---
 

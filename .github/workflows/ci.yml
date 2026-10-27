@@ -29,7 +29,7 @@ jobs:
 
       - run: pnpm test
 
-      - name: Check the committed math.wasm still has the expected shape
+      - name: Check both committed .wasm files still have the expected shape
         run: pnpm inspect:wasm
 
   e2e:

@@ -4,10 +4,33 @@ const MS = /\d+(\.\d+)?\s*ms/;
 /** toLocaleString inserts group separators, so match the digits loosely. */
 const digits = (n: number) => new RegExp(String(n).split("").join("[,.\\s]?"));
 
-test("serves .wasm as application/wasm, so compileStreaming is used", async ({ request }) => {
-  const res = await request.get("/math.wasm");
-  expect(res.status()).toBe(200);
-  expect(res.headers()["content-type"]).toBe("application/wasm");
+test("serves both .wasm files as application/wasm, so compileStreaming is used", async ({
+  request,
+}) => {
+  for (const file of ["/math.wasm", "/memory.wasm"]) {
+    const res = await request.get(file);
+    expect(res.status(), file).toBe(200);
+    expect(res.headers()["content-type"], file).toBe("application/wasm");
+  }
+});
+
+test("the two tabs load two different modules", async ({ page }) => {
+  const fetched: string[] = [];
+  page.on("request", (r) => {
+    const path = new URL(r.url()).pathname;
+    if (path.endsWith(".wasm")) fetched.push(path);
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
+  expect(fetched).toContain("/math.wasm");
+  // The benchmark must not pull in the 186 kB module: that is the whole
+  // point of the split.
+  expect(fetched).not.toContain("/memory.wasm");
+
+  await page.getByTestId("tab-examples").click();
+  await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
+  expect(fetched).toContain("/memory.wasm");
 });
 
 test("useWasm computes synchronously during render", async ({ page }) => {

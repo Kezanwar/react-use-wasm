@@ -1,4 +1,10 @@
-// Passing more than numbers across the WebAssembly boundary.
+// Package main builds memory.wasm: passing more than numbers across the
+// WebAssembly boundary.
+//
+// Deliberately a separate module from math.wasm. Benchmarking fib against
+// JavaScript only means anything if V8 top-tiers the wasm, and it stops
+// doing that once a module grows past a few kB — see USAGE.md. Keeping the
+// benchmark module tiny is the whole reason these are split.
 //
 // A wasm function can only take and return numbers. Anything bigger — an
 // array, a string, a struct — is passed as an *offset* into the module's
@@ -194,3 +200,5 @@ func jsonStats(ptr unsafe.Pointer, n int32) int64 {
 	copy(unsafe.Slice((*byte)(dst), len(encoded)), encoded)
 	return pack(dst, len(encoded))
 }
+
+func main() {}

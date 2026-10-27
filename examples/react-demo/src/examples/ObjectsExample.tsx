@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Boxes, TriangleAlert } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
-import type { MathExports } from "@/math-exports";
+import type { MemoryExports } from "@/memory-exports";
 import {
   encode,
   readFloat64Array,
@@ -53,7 +53,7 @@ function parsePoints(text: string): Float64Array {
   return Float64Array.from(nums.slice(0, nums.length - (nums.length % 2)));
 }
 
-export function ObjectsExample({ e }: { e: MathExports }) {
+export function ObjectsExample({ e }: { e: MemoryExports }) {
   const [pointText, setPointText] = useState(DEFAULT_POINTS);
   const [centroid, setCentroid] = useState<[number, number] | null>(null);
 

@@ -1,7 +1,7 @@
 import { useWasm } from "react-use-wasm";
 import { MemoryStick, TriangleAlert } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
-import type { MathExports } from "@/math-exports";
+import type { MemoryExports } from "@/memory-exports";
 import { memorySize } from "@/lib/wasm-memory";
 import { ArraysExample } from "@/examples/ArraysExample";
 import { StringsExample } from "@/examples/StringsExample";
@@ -19,9 +19,9 @@ import { Card, CardContent } from "@/components/ui/card";
  * Benchmarks tab loads the same file.
  */
 export function ExamplesPage() {
-  const wasm = useWasm<MathExports>("/math.wasm", {
-    imports: { env: { log: (x: number) => console.log("[main] wasm logged:", x) } },
-  });
+  // A different module from the Benchmarks tab: /memory.wasm is where the
+  // linear-memory exports live, and it imports nothing at all.
+  const wasm = useWasm<MemoryExports>("/memory.wasm");
 
   if (wasm.status === "error") {
     return (

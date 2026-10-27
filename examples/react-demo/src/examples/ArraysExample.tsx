@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Brackets } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
-import type { MathExports } from "@/math-exports";
+import type { MemoryExports } from "@/memory-exports";
 import { readInt32Array, withAlloc, writeInt32Array } from "@/lib/wasm-memory";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ const parse = (text: string): Int32Array =>
       .filter((n) => Number.isFinite(n))
   );
 
-export function ArraysExample({ e }: { e: MathExports }) {
+export function ArraysExample({ e }: { e: MemoryExports }) {
   const [text, setText] = useState("5, 3, 9, 1, 7");
   const [sum, setSum] = useState<number | null>(null);
   const [sorted, setSorted] = useState<number[] | null>(null);

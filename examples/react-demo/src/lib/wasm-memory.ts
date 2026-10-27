@@ -1,4 +1,4 @@
-import type { MathExports } from "@/math-exports";
+import type { MemoryExports } from "@/memory-exports";
 
 /**
  * The JavaScript half of the linear-memory protocol.
@@ -26,7 +26,7 @@ export function unpack(packed: bigint): { ptr: number; len: number } {
  * Read anything you need out of memory *inside* `body`.
  */
 export function withAlloc<R>(
-  e: MathExports,
+  e: MemoryExports,
   bytes: number,
   body: (ptr: number) => R
 ): R {
@@ -38,16 +38,16 @@ export function withAlloc<R>(
   }
 }
 
-export function writeBytes(e: MathExports, ptr: number, data: Uint8Array): void {
+export function writeBytes(e: MemoryExports, ptr: number, data: Uint8Array): void {
   new Uint8Array(e.memory.buffer).set(data, ptr);
 }
 
-export function readBytes(e: MathExports, ptr: number, len: number): Uint8Array {
+export function readBytes(e: MemoryExports, ptr: number, len: number): Uint8Array {
   // Copied out, so the caller is not holding a view that a later grow kills.
   return new Uint8Array(e.memory.buffer.slice(ptr, ptr + len));
 }
 
-export function readString(e: MathExports, ptr: number, len: number): string {
+export function readString(e: MemoryExports, ptr: number, len: number): string {
   return decoder.decode(readBytes(e, ptr, len));
 }
 
@@ -55,19 +55,19 @@ export function encode(text: string): Uint8Array {
   return encoder.encode(text);
 }
 
-export function writeInt32Array(e: MathExports, ptr: number, xs: Int32Array): void {
+export function writeInt32Array(e: MemoryExports, ptr: number, xs: Int32Array): void {
   new Int32Array(e.memory.buffer, ptr, xs.length).set(xs);
 }
 
-export function readInt32Array(e: MathExports, ptr: number, len: number): Int32Array {
+export function readInt32Array(e: MemoryExports, ptr: number, len: number): Int32Array {
   return new Int32Array(e.memory.buffer.slice(ptr, ptr + len * 4));
 }
 
-export function writeFloat64Array(e: MathExports, ptr: number, xs: Float64Array): void {
+export function writeFloat64Array(e: MemoryExports, ptr: number, xs: Float64Array): void {
   new Float64Array(e.memory.buffer, ptr, xs.length).set(xs);
 }
 
-export function readFloat64Array(e: MathExports, ptr: number, len: number): Float64Array {
+export function readFloat64Array(e: MemoryExports, ptr: number, len: number): Float64Array {
   return new Float64Array(e.memory.buffer.slice(ptr, ptr + len * 8));
 }
 
@@ -75,7 +75,7 @@ export function readFloat64Array(e: MathExports, ptr: number, len: number): Floa
  * Call a function that returns a packed (offset, length) bigint, read the
  * string it points at, and free it. `0n` means the module reported failure.
  */
-export function takePackedString(e: MathExports, packed: bigint): string | null {
+export function takePackedString(e: MemoryExports, packed: bigint): string | null {
   if (packed === 0n) return null;
   const { ptr, len } = unpack(packed);
   try {
@@ -86,6 +86,6 @@ export function takePackedString(e: MathExports, packed: bigint): string | null 
 }
 
 /** How much linear memory the module currently owns, in bytes. */
-export function memorySize(e: MathExports): number {
+export function memorySize(e: MemoryExports): number {
   return e.memory.buffer.byteLength;
 }
