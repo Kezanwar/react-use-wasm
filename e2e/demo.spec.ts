@@ -111,3 +111,78 @@ test("imports reach the module on both threads", async ({ page }) => {
     .poll(() => consoleLines.some((l) => l.includes("[worker] wasm logged: 3")))
     .toBe(true);
 });
+
+/* ------------------------------------------------------------------ */
+/* Examples tab: passing more than numbers                             */
+/* ------------------------------------------------------------------ */
+
+test("tabs switch between the two pages", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
+
+  await page.getByTestId("tab-examples").click();
+  await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("main-run")).toBeHidden();
+
+  await page.getByTestId("tab-benchmarks").click();
+  await expect(page.getByTestId("main-run")).toBeVisible();
+});
+
+test("arrays cross the boundary as (offset, length)", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  const run = page.getByTestId("arrays-run");
+  await expect(run).toBeVisible({ timeout: 15_000 });
+  await page.getByTestId("arrays-input").fill("5, 3, 9, 1, 7");
+  await run.click();
+
+  await expect(page.getByTestId("arrays-sum")).toHaveText("25");
+  // Sorted in place by wasm, read back out of the same bytes by JS.
+  await expect(page.getByTestId("arrays-sorted")).toHaveText("[1, 3, 5, 7, 9]");
+  await expect(page.getByTestId("arrays-offset")).toContainText("0x");
+});
+
+test("strings round-trip, and a new one comes back as a packed bigint", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  const run = page.getByTestId("strings-run");
+  await expect(run).toBeVisible({ timeout: 15_000 });
+  await page.getByTestId("strings-input").fill("hello wasm");
+  await run.click();
+
+  await expect(page.getByTestId("strings-upper")).toHaveText("HELLO WASM");
+  // Reverse runs on the bytes upperInPlace already changed.
+  await expect(page.getByTestId("strings-reversed")).toHaveText("MSAW OLLEH");
+  await expect(page.getByTestId("strings-packed")).toContainText("n");
+  await expect(page.getByTestId("strings-packed")).toContainText("length 10");
+});
+
+test("objects work both by struct layout and by JSON", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  await expect(page.getByTestId("objects-struct-run")).toBeVisible({ timeout: 15_000 });
+
+  // Four corners of a square, averaged through an out-pointer.
+  await page.getByTestId("objects-points").fill("0,0  10,0  10,10  0,10");
+  await page.getByTestId("objects-struct-run").click();
+  await expect(page.getByTestId("objects-centroid")).toHaveText("(5, 5)");
+
+  await page.getByTestId("objects-json-run").click();
+  await expect(page.getByTestId("objects-stats")).toContainText('"count":3');
+  await expect(page.getByTestId("objects-stats")).toContainText('"oldest":"Grace"');
+});
+
+test("bad JSON surfaces the module's 0n failure signal", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  await expect(page.getByTestId("objects-json-run")).toBeVisible({ timeout: 15_000 });
+  await page.getByTestId("objects-json").fill("definitely not json");
+  await page.getByTestId("objects-json-run").click();
+
+  await expect(page.getByTestId("objects-stats")).toContainText("0n");
+});
