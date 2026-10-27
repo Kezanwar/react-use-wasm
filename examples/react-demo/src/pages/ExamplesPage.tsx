@@ -8,6 +8,7 @@ import { StringsExample } from "@/examples/StringsExample";
 import { ObjectsExample } from "@/examples/ObjectsExample";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { asset } from "@/lib/asset";
 
 /**
  * Everything on this page needs the live instance rather than `call`,
@@ -21,7 +22,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export function ExamplesPage() {
   // A different module from the Benchmarks tab: /memory.wasm is where the
   // linear-memory exports live, and it imports nothing at all.
-  const wasm = useWasm<MemoryExports>("/memory.wasm");
+  const wasm = useWasm<MemoryExports>(asset("memory.wasm"));
 
   if (wasm.status === "error") {
     return (

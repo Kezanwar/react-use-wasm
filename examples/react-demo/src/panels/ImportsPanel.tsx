@@ -5,6 +5,7 @@ import { Js } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { asset } from "@/lib/asset";
 
 /**
  * Both ways of supplying the wasm module's imports.
@@ -19,14 +20,14 @@ export function ImportsPanel() {
   const [mainLog, setMainLog] = useState<number[]>([]);
   const [workerResult, setWorkerResult] = useState<number | null>(null);
 
-  const main = useWasm<MathExports>("/math.wasm", {
+  const main = useWasm<MathExports>(asset("math.wasm"), {
     imports: {
       env: { log: (x: number) => setMainLog((prev) => [...prev, x]) },
     },
   });
 
-  const worker = useWasmWorker<MathExports>("/math.wasm", {
-    importsUrl: "/wasm-imports.js",
+  const worker = useWasmWorker<MathExports>(asset("math.wasm"), {
+    importsUrl: asset("wasm-imports.js"),
   });
 
   return (

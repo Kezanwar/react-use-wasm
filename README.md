@@ -427,7 +427,7 @@ pnpm build:wasm    # rebuild both wasm modules from examples/go with TinyGo
 pnpm test:browser  # Playwright against the demo in real Chromium
 ```
 
-The demo at [`examples/react-demo`](examples/react-demo) (Vite, Tailwind, shadcn/ui) has two tabs.
+The demo at [`examples/react-demo`](examples/react-demo) (Vite, Tailwind, shadcn/ui) has two tabs. It is deployed to <https://kezanwar.github.io/react-use-wasm/>.
 
 **Benchmarks** is a head-to-head. Each hook gets a panel that runs the same naive recursive `fib` twice, once in JavaScript and once in the TinyGo module, and reports both timings:
 

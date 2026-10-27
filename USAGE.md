@@ -36,7 +36,7 @@ Run all of these from the repo root.
 | `pnpm build` | tsup → `dist/` (ESM + CJS + `.d.ts` + sourcemaps) |
 | `pnpm build:wasm` | rebuilds `math.wasm` with TinyGo, then audits its imports |
 | `pnpm inspect:wasm` | lists imports/exports of the committed `math.wasm` |
-| `pnpm test:browser` | Playwright against the demo in real Chromium |
+| `pnpm test:browser` | Playwright: the demo in real Chromium, plus a sub-directory deploy |
 
 **Order matters for `pnpm test`.** Two suites assert things about the built
 bundles (`test/dist-output.test.ts` and the hostile-globals part of
@@ -140,6 +140,7 @@ section "`call` or `exports`?" is the user-facing version of this.
 | `test/memory-wasm.test.ts` | node | the committed `memory.wasm` against `MemoryExports`, and every step of the linear-memory protocol |
 | `test/dist-output.test.ts` | node | the published artefact (see Build above) |
 | `e2e/demo.spec.ts` | Chromium | the real browser, below |
+| `e2e/subpath.spec.ts` | Chromium | the production build served from a sub-directory, the way GitHub Pages does |
 
 ### What only the browser test can cover
 
@@ -328,6 +329,46 @@ They are separate so a browser-download hiccup cannot mask a unit test failure.
 
 No linter. `tsc --strict` plus `noUnusedLocals` / `noUnusedParameters` covers
 the usual ground; add ESLint if you want more.
+
+---
+
+## Deploying the demo
+
+GitHub Pages, via [.github/workflows/pages.yml](.github/workflows/pages.yml),
+on every push to `main` or by manual dispatch. Live at
+<https://kezanwar.github.io/react-use-wasm/>.
+
+**Two things need doing by hand, once:**
+
+1. **Settings → Pages → Source → GitHub Actions.** The workflow fails until
+   this is set; it cannot be done from a workflow.
+2. Nothing else. There is no `NPM_TOKEN` equivalent and no `.nojekyll`
+   needed, because an Actions deploy skips Jekyll entirely.
+
+### Never write an absolute asset path
+
+Pages serves the demo from `/react-use-wasm/`, not `/`. A path like
+`"/math.wasm"` points at the domain root, works perfectly in dev, and 404s
+in production.
+
+`vite.config.ts` sets `base: "./"` and everything in `public/` goes through
+`asset()` in [src/lib/asset.ts](examples/react-demo/src/lib/asset.ts):
+
+```ts
+useWasm<MathExports>(asset("math.wasm"))
+useWasmWorker<MathExports>(asset("math.wasm"), { importsUrl: asset("wasm-imports.js") })
+```
+
+A relative base rather than a hard-coded `/react-use-wasm/` means dev,
+`vite preview`, the Playwright suite and Pages all work off one setting, and
+nothing breaks if the repo is renamed.
+
+`e2e/subpath.spec.ts` runs the real production build against
+[scripts/serve-subpath.mjs](scripts/serve-subpath.mjs), which mimics Pages,
+and fails on any 404 or page error. It also serves `.wasm` as the wrong MIME
+type in a second pass, proving the hooks fall back from `compileStreaming`
+to `compile(arrayBuffer)` if Pages ever gets that header wrong. Both are
+covered by `pnpm test:browser`.
 
 ---
 

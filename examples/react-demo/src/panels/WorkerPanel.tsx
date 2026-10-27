@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { asset } from "@/lib/asset";
 
 const WARMUP_N = 24;
 
@@ -29,10 +30,10 @@ export function WorkerPanel() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
-  const wasm = useWasmWorker<MathExports>("/math.wasm", {
-    importsUrl: "/wasm-imports.js",
+  const wasm = useWasmWorker<MathExports>(asset("math.wasm"), {
+    importsUrl: asset("wasm-imports.js"),
   });
-  const js = useJsWorker("/js-fib-worker.js");
+  const js = useJsWorker(asset("js-fib-worker.js"));
 
   const ready = wasm.status === "ready" && js.isReady;
 

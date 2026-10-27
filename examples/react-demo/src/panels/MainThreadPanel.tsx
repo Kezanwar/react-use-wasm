@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { asset } from "@/lib/asset";
 
 /** Lets React paint before we hog the thread, so "running…" is actually seen. */
 const nextPaint = () =>
@@ -31,7 +32,7 @@ export function MainThreadPanel() {
   const [wasmValue, setWasmValue] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { status, error, call, reload } = useWasm<MathExports>("/math.wasm", {
+  const { status, error, call, reload } = useWasm<MathExports>(asset("math.wasm"), {
     imports: {
       env: { log: (x: number) => console.log("[main] wasm logged:", x) },
     },
