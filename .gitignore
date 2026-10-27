@@ -8,3 +8,4 @@ examples/react-demo/dist/
 test-results/
 playwright-report/
 .playwright/
+todo/

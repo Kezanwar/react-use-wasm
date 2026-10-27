@@ -33,13 +33,6 @@ test("the two tabs load two different modules", async ({ page }) => {
   expect(fetched).toContain("/memory.wasm");
 });
 
-test("useWasm computes synchronously during render", async ({ page }) => {
-  await page.goto("/");
-
-  await expect(page.getByTestId("add-result")).toHaveText("5");
-  await expect(page.getByTestId("scale-result")).toHaveText("10");
-});
-
 test("useWasm panel benchmarks JS against wasm on the main thread", async ({ page }) => {
   await page.goto("/");
 

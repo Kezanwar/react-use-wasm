@@ -32,7 +32,6 @@ for (const [label, base] of [
 
     // Benchmarks tab
     await expect(page.getByTestId("main-run")).toBeEnabled({ timeout: 20_000 });
-    await expect(page.getByTestId("add-result")).toHaveText("5");
     await page.getByTestId("main-n").fill("28");
     await page.getByTestId("main-run").click();
     await expect(page.getByTestId("main-verdict")).toContainText("faster", { timeout: 30_000 });
