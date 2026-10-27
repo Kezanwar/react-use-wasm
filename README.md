@@ -129,9 +129,34 @@ Rough rule: **if a single call takes longer than about 50 ms, use `useWasmWorker
 
 At 60 fps you have 16 ms per frame. A synchronous wasm call on the main thread cannot be interrupted, so anything past a frame or two shows up as a dropped frame, a stuck animation or a button that does not respond. A `fib(40)` in the example module takes about 240 ms in Chromium; that is a quarter of a second of completely frozen page.
 
-Note what this is *not* about. Moving to wasm buys you speed, not responsiveness. Measured in the demo below, the TinyGo build of naive recursive `fib` runs roughly **2.8× faster** than the same algorithm in JIT-compiled JavaScript — a real win, but `fib(40)` still blocks the page for 240 ms if you run it on the main thread. Only the worker hook fixes that.
+Note what this is *not* about. Moving to wasm buys you speed, not responsiveness. It runs the example roughly **2.8× faster** than JavaScript ([numbers below](#benchmarks)) — a real win, but `fib(40)` still freezes the page for 240 ms if you run it on the main thread. Only the worker hook fixes that.
 
 Use `useWasm` when calls are short and you want the result during render. Use `useWasmWorker` when they are not. Both can point at the same URL; the compiled module is cached and shared between them.
+
+---
+
+## Benchmarks
+
+Naive recursive `fib`, the same algorithm on both sides: [`examples/go/math.go`](examples/go/math.go) built with TinyGo, against [`examples/react-demo/src/fib.ts`](examples/react-demo/src/fib.ts) in JavaScript. Chromium 156 on an Apple M-series Mac.
+
+| n  | JavaScript | WebAssembly | speedup |
+| -- | ---------- | ----------- | ------- |
+| 30 | 7 ms       | 2 ms        | 3.33×   |
+| 35 | 64 ms      | 22 ms       | 2.99×   |
+| 38 | 267 ms     | 95 ms       | 2.83×   |
+| 40 | 687 ms     | 239 ms      | 2.87×   |
+| 42 | 1738 ms    | 624 ms      | 2.78×   |
+
+**Read this as "about 3×", not "about 10×".** Modern JavaScript JITs are very good at tight numeric recursion, which is the case wasm is *supposed* to win most easily. Expect a larger gap for code the JIT cannot keep in integers, and a smaller one (or none) for code dominated by calls across the JS boundary.
+
+Running the same comparison inside Web Workers gives the same numbers within noise — at n = 38, 257 ms vs 92 ms. **The `postMessage` round trip costs well under a millisecond**, so the worker hook is effectively free: you give up nothing in throughput for not blocking the page.
+
+Two things make these figures honest, and both are worth copying if you benchmark your own module:
+
+- **Both sides are warmed up first** (at n = 24). An un-JITted first call to the JavaScript version loses by a mile, which would flatter wasm enormously.
+- **The two runs are sequential**, not parallel, so they are not competing for cores.
+
+Reproduce it yourself with `pnpm dev` — the demo computes the ratio live rather than trusting this table, and it will tell you if JavaScript wins on your machine.
 
 ---
 
@@ -312,18 +337,7 @@ The demo at [`examples/react-demo`](examples/react-demo) is built around a head-
 - **`useWasmWorker` panel** — the wasm side uses `useWasmWorker`, the JavaScript side a plain module worker with the same message shape, so the only variable is the language. The frame counter keeps climbing throughout, and there is a Cancel button that kills both workers mid-run and restarts them.
 - **Imports panel** — `imports` on the main thread, `importsUrl` in the worker.
 
-Both sides are warmed up before timing, otherwise an un-JITted first call to the JavaScript version would lose by a mile and the comparison would mean nothing.
-
-Measured in Chromium on an M-series Mac, for reference:
-
-| n  | JavaScript | WebAssembly |
-| -- | ---------- | ----------- |
-| 35 | 64 ms      | 22 ms       |
-| 38 | 267 ms     | 95 ms       |
-| 40 | 687 ms     | 239 ms      |
-| 42 | 1738 ms    | 624 ms      |
-
-Your numbers will differ. The ratio holds up better than the absolute figures.
+Both sides are warmed up before timing, otherwise an un-JITted first call to the JavaScript version would lose by a mile and the comparison would mean nothing. See [Benchmarks](#benchmarks) for the figures this produces.
 
 ---
 
