@@ -118,7 +118,7 @@ export function ObjectsExample({ e }: { e: MathExports }) {
               aria-label="Points as x,y pairs"
               className="border-input bg-background focus-visible:ring-ring h-9 max-w-xs flex-1 rounded-md border px-3 font-mono text-sm focus-visible:ring-2 focus-visible:outline-none"
             />
-            <Button variant="outline" onClick={runStruct} data-testid="objects-struct-run">
+            <Button onClick={runStruct} data-testid="objects-struct-run">
               centroid
             </Button>
             <span className="tabular font-mono text-sm" data-testid="objects-centroid">
@@ -151,7 +151,7 @@ export function ObjectsExample({ e }: { e: MathExports }) {
           />
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" onClick={runJson} data-testid="objects-json-run">
+            <Button onClick={runJson} data-testid="objects-json-run">
               jsonStats
             </Button>
             {jsonError ? (
