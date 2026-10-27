@@ -48,7 +48,16 @@ export function Calculator() {
 }
 ```
 
-`status` is a discriminated union, so `exports` is `T` only in the `ready` branch and `error` is an `Error` only in the `error` branch.
+Or skip `call` and use the instance directly — `exports` is right there:
+
+```tsx
+const { isReady, exports } = useWasm<MathExports>("/math.wasm");
+if (!isReady) return <p>Loading wasm…</p>;
+
+return <p>2 + 3 = {exports.add(2, 3)}</p>;
+```
+
+Both `status` and `isReady` are discriminants, so either guard narrows `exports` from `T | null` to `T`, and `error` to `Error` in the error branch. That holds after destructuring.
 
 | field     | type                                              |
 | --------- | ------------------------------------------------- |
@@ -56,7 +65,7 @@ export function Calculator() {
 | `exports` | `T` when ready, otherwise `null`                   |
 | `error`   | `Error` when errored, otherwise `null`             |
 | `call`    | typed, synchronous; throws if not ready            |
-| `isReady` | `status === "ready"`                               |
+| `isReady` | `true` only when ready; narrows the result         |
 | `reload`  | re-fetch, recompile, re-instantiate                |
 
 Pass `null` as the URL to skip loading entirely (the hook sits at `idle`).
@@ -101,7 +110,7 @@ There is no `exports` field here: the instance lives in the worker and never cro
 
 ## Typing your exports
 
-The interface you pass as `T` is what gives `call` its types. Write it to match what your `.wasm` actually exports:
+The interface you pass as `T` is what types both `call` and `exports`. Write it to match what your `.wasm` actually exports:
 
 ```ts
 interface MathExports {
@@ -113,13 +122,40 @@ interface MathExports {
 
 Rules worth knowing:
 
-- **Only function-valued properties are callable.** `call("memory")` is a compile error. That is `WasmFunctionKeys<T>` doing its job.
+- **Only function-valued properties are reachable through `call`.** `call("memory")` is a compile error — that is `WasmFunctionKeys<T>` doing its job. Use `exports.memory` when you want the memory itself.
 - **`i32`, `f32` and `f64` are all `number` in JS.** Declare them as `number`.
 - **`i64` is a `bigint`**, both as an argument and as a return value. Declare it as `bigint` or your numbers will silently be wrong.
 - **You only declare what you use.** Undeclared exports (toolchain helpers and so on) are simply invisible to `call`.
 - **`_initialize` is excluded on purpose.** See below.
 
 Nothing validates your interface against the real module at runtime, so it is worth a test. The one in this repo instantiates the built `math.wasm` and checks every declared function exists and returns the right value: [`test/math-wasm.test.ts`](test/math-wasm.test.ts).
+
+---
+
+## `call` or `exports`?
+
+For `useWasm`, both. They are equally type-safe — pick on what you need.
+
+```tsx
+const wasm = useWasm<MathExports>("/math.wasm");
+if (!wasm.isReady) return null;
+
+wasm.call("add", 2, 3);     // 5
+wasm.exports.add(2, 3);     // 5 — same checks, same types
+```
+
+**Reach for `exports` when** you want the rest of the instance. `call` only exposes function exports, so `memory`, globals and tables are invisible to it — and you need `memory` for anything beyond passing numbers around, like reading a string out of linear memory. Property access also gives better autocomplete and go-to-definition than a string literal in a mapped type.
+
+**Reach for `call` when** you want the component to read identically whether it uses `useWasm` or `useWasmWorker`. Swapping one hook for the other then means changing the import and adding an `await`, nothing else. It also throws a legible error (`useWasm: "add" called before the module was ready`) instead of a raw `TypeError` if you get the guard wrong.
+
+**For `useWasmWorker` there is no choice.** The instance lives in the worker and never crosses back, so `call` is not a convenience there — it is the RPC that marshals the name and arguments over `postMessage` and matches the reply.
+
+Either way you have to narrow first. `isReady` and `status === "ready"` both work:
+
+```tsx
+if (!isReady) return null;              // works
+if (status !== "ready") return null;    // works
+```
 
 ---
 
@@ -360,7 +396,7 @@ Both sides are warmed up before timing, otherwise an un-JITted first call to the
 | `fetchInit`  | `RequestInit` | —               | extra fetch options                        |
 | `workerUrl`  | `string`      | inline blob URL | your own copy of `WASM_WORKER_SOURCE`      |
 
-Adds `terminate()` to the result. `call` returns a Promise.
+Adds `terminate()` to the result, and `call` returns a Promise. There is no `exports` field: the instance lives in the worker, so `call` is the only way in.
 
 ### Also exported
 

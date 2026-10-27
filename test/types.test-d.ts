@@ -102,3 +102,55 @@ describe("state is a discriminated union", () => {
     expectTypeOf(useWasmWorker<MathExports>).toBeCallableWith(null);
   });
 });
+
+describe("isReady is a discriminant, not a derived boolean", () => {
+  it("narrows exports after destructuring useWasm", () => {
+    const { isReady, exports, error } = main;
+
+    if (isReady) {
+      expectTypeOf(exports).toEqualTypeOf<MathExports>();
+      expectTypeOf(error).toEqualTypeOf<null>();
+      // The payoff: no `call` needed, and `memory` is reachable, which
+      // `call` cannot do.
+      expectTypeOf(exports.add(2, 3)).toEqualTypeOf<number>();
+      expectTypeOf(exports.memory).toEqualTypeOf<WebAssembly.Memory>();
+    } else {
+      expectTypeOf(exports).toEqualTypeOf<null>();
+    }
+  });
+
+  it("narrows status too, in both directions", () => {
+    const { isReady, status } = main;
+    if (isReady) {
+      expectTypeOf(status).toEqualTypeOf<"ready">();
+    } else {
+      expectTypeOf(status).toEqualTypeOf<"idle" | "loading" | "error">();
+    }
+  });
+
+  it("narrows error in the error branch", () => {
+    const { status, error } = main;
+    if (status === "error") {
+      expectTypeOf(error).toEqualTypeOf<Error>();
+    }
+  });
+
+  it("narrows the worker hook, which has no exports to narrow", () => {
+    const { isReady, status, error } = worker;
+    if (isReady) {
+      expectTypeOf(status).toEqualTypeOf<"ready">();
+      expectTypeOf(error).toEqualTypeOf<null>();
+    }
+  });
+
+  it("still rejects a bad direct call", () => {
+    const { isReady, exports } = main;
+    if (!isReady) return;
+    // @ts-expect-error add takes two arguments
+    exports.add(2);
+    // @ts-expect-error string is not assignable to number
+    exports.add("2", 3);
+    // @ts-expect-error not an export
+    exports.subtract(1, 2);
+  });
+});

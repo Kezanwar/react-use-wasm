@@ -21,11 +21,17 @@ export type WasmFunctionKeys<T> = Exclude<
 
 export type Fn<T, K extends keyof T> = Extract<T[K], AnyFn>;
 
+/**
+ * `isReady` is part of the union, with a literal type in each branch, rather
+ * than a derived boolean. That makes it a second discriminant alongside
+ * `status`, so `if (isReady)` narrows `exports` from `T | null` to `T` even
+ * after destructuring. A plain `boolean` would not.
+ */
 export type UseWasmState<T> =
-  | { status: "idle"; exports: null; error: null }
-  | { status: "loading"; exports: null; error: null }
-  | { status: "ready"; exports: T; error: null }
-  | { status: "error"; exports: null; error: Error };
+  | { status: "idle"; isReady: false; exports: null; error: null }
+  | { status: "loading"; isReady: false; exports: null; error: null }
+  | { status: "ready"; isReady: true; exports: T; error: null }
+  | { status: "error"; isReady: false; exports: null; error: Error };
 
 export interface UseWasmOptions {
   /** Import object passed to WebAssembly.instantiate (e.g. { env: { log } }). */
@@ -37,12 +43,17 @@ export interface UseWasmOptions {
 }
 
 export interface UseWasmHelpers<T> {
-  /** Typed call into an exported function. Throws if the module isn't ready. */
+  /**
+   * Typed call into an exported function. Throws if the module isn't ready.
+   *
+   * Optional: once the state is narrowed you can call `exports` directly,
+   * which also reaches `memory`, globals and tables. `call` exists so that a
+   * component reads the same whichever hook it uses.
+   */
   call: <K extends WasmFunctionKeys<T>>(
     name: K,
     ...args: Parameters<Fn<T, K>>
   ) => ReturnType<Fn<T, K>>;
-  isReady: boolean;
   /** Re-fetch, recompile and re-instantiate the module. */
   reload: () => void;
 }
@@ -111,8 +122,8 @@ export function runReactorInit(exports: WebAssembly.Exports): void {
 /* Hook                                                                */
 /* ------------------------------------------------------------------ */
 
-const IDLE = { status: "idle", exports: null, error: null } as const;
-const LOADING = { status: "loading", exports: null, error: null } as const;
+const IDLE = { status: "idle", isReady: false, exports: null, error: null } as const;
+const LOADING = { status: "loading", isReady: false, exports: null, error: null } as const;
 
 /**
  * Load a WebAssembly module and call its exports with full typing.
@@ -161,6 +172,7 @@ export function useWasm<T extends object = WebAssembly.Exports>(
         if (!cancelled) {
           setState({
             status: "ready",
+            isReady: true,
             exports: instance.exports as unknown as T,
             error: null,
           });
@@ -169,6 +181,7 @@ export function useWasm<T extends object = WebAssembly.Exports>(
         if (cancelled) return;
         setState({
           status: "error",
+          isReady: false,
           exports: null,
           error: err instanceof Error ? err : new Error(String(err)),
         });
@@ -205,5 +218,5 @@ export function useWasm<T extends object = WebAssembly.Exports>(
     setReloadKey((k) => k + 1);
   }, [url]);
 
-  return { ...state, call, isReady: state.status === "ready", reload } as UseWasmResult<T>;
+  return { ...state, call, reload } as UseWasmResult<T>;
 }

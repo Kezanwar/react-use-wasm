@@ -90,6 +90,35 @@ Other fixed points, all asserted by that same test file:
 
 ---
 
+## Why `isReady` lives in the state union
+
+`isReady` is not computed on the way out. It is a field of `UseWasmState` /
+`UseWasmWorkerState` with a **literal** type per branch — `true` in `ready`,
+`false` everywhere else.
+
+**Do not "simplify" it back to `isReady: boolean` in the helpers.** The literal
+types are what make it a second discriminant alongside `status`, so this
+narrows:
+
+```tsx
+const { isReady, exports } = useWasm<MathExports>("/math.wasm");
+if (!isReady) return null;
+exports.add(2, 3);   // exports is MathExports here, not MathExports | null
+```
+
+With a derived `boolean` that last line is `'exports' is possibly null`, and
+`call` becomes the only ergonomic way to reach the module on the main thread.
+TypeScript enforces the correlation now that it is in the union, and
+`test/types.test-d.ts` has five tests pinning the narrowing in both
+directions, on both hooks.
+
+Related: `call` is genuinely load-bearing for `useWasmWorker` (it is the RPC
+over `postMessage`) but optional for `useWasm`, where `exports` is right there
+and reaches `memory`, globals and tables that `call` cannot. The README
+section "`call` or `exports`?" is the user-facing version of this.
+
+---
+
 ## Tests
 
 **59 Vitest tests across 6 files, plus 5 Playwright tests.**
