@@ -45,7 +45,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "pnpm --filter react-use-wasm-demo dev",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && pnpm --filter react-use-wasm-demo exec tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:browser": "playwright test",
