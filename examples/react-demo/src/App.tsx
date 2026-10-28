@@ -2,7 +2,7 @@ import { BookMarked, CodeXml, Gauge, Puzzle, Rocket } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CopyForLlm } from "@/components/CopyForLlm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Wasm } from "@/components/Term";
+import { Go, Name, Wasm } from "@/components/Term";
 import { BenchmarksPage } from "@/pages/BenchmarksPage";
 import { ExamplesPage } from "@/pages/ExamplesPage";
 import { ApiPage } from "@/pages/ApiPage";
@@ -21,8 +21,8 @@ export function App() {
                 react-use-<span className="text-wasm">wasm</span>
               </h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                Typed React hooks for <Wasm />, against a TinyGo module built for{" "}
-                <code>wasm-unknown</code>.
+                Typed <Name>React</Name> hooks for <Wasm />, against a <Go>TinyGo</Go> module built
+                for <code>wasm-unknown</code>.
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">

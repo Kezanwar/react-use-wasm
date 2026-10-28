@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Boxes, Cpu, MemoryStick, Wrench } from "lucide-react";
-import { Js, Wasm } from "@/components/Term";
+import { Js, Name, Wasm } from "@/components/Term";
 import { CodeBlock, HighlightedCode } from "@/components/CodeBlock";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -176,8 +176,9 @@ export function ApiPage() {
               </Badge>
             </h3>
             <p className="text-muted-foreground text-sm">
-              For passing anything bigger than a number. Opt-in: a module with no allocator is
-              unaffected, and every one of these is tree-shaken away if you never import it.
+              For passing anything bigger than a number. <Name>Opt-in</Name>: a module with no
+              allocator is unaffected, and every one of these is tree-shaken away if you never
+              import it.
             </p>
           </div>
 
@@ -195,9 +196,9 @@ export function ApiPage() {
             name="withScope"
             description={
               <>
-                An opt-in helper for passing anything bigger than a number. It reserves the memory,
-                copies your data in, hands you the offset and length wasm wants, and frees it all
-                again on the way out.
+                An <Name>opt-in</Name> helper for passing anything bigger than a number. It reserves
+                the memory, copies your data in, hands you the offset and length wasm wants, and
+                frees it all again on the way out.
               </>
             }
             signature={SCOPE}
@@ -313,8 +314,8 @@ export function ApiPage() {
 
           <Entry name="resolveAllocator" signature={`resolveAllocator(exports, names?): Allocator`}>
             <p>
-              The lookup <code>withScope</code> does internally, exported for use outside React — in
-              a worker, in tests, in plain <Js />.
+              The lookup <code>withScope</code> does internally, exported for use outside{" "}
+              <Name>React</Name> — in a worker, in tests, in plain <Js />.
             </p>
           </Entry>
 

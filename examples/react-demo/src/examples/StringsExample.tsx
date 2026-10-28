@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Type } from "lucide-react";
-import { Js } from "@/components/Term";
+import { Go, Js } from "@/components/Term";
 import { stringVal, unpack } from "react-use-wasm";
 import type { MemoryProps } from "@/memory-exports";
 import { CodeTabs } from "@/components/CodeBlock";
@@ -90,9 +90,9 @@ export function StringsExample({ e, withScope }: MemoryProps) {
           </Badge>
         </CardTitle>
         <CardDescription>
-          A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back, so
-          Go packs the offset and length into a single <code>i64</code> — which is exactly why it
-          arrives in <Js /> as a <code>bigint</code>.
+          A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back, so{" "}
+          <Go /> packs the offset and length into a single <code>i64</code> — which is exactly why
+          it arrives in <Js /> as a <code>bigint</code>.
         </CardDescription>
       </CardHeader>
 

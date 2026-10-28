@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Boxes, Download, FileCode2, Hammer, Play } from "lucide-react";
-import { Js, Wasm } from "@/components/Term";
+import { Go, Js, Name, Wasm } from "@/components/Term";
 import { CodeBlock, CodeTabs } from "@/components/CodeBlock";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -116,8 +116,8 @@ export function GettingStartedPage() {
     <div className="space-y-6">
       <p className="text-muted-foreground text-sm">
         From nothing to a running module in five steps, using the same <code>fib</code> the
-        Benchmarks tab races. The Go below is really <code>examples/go/math/math.go</code> in this
-        repo, so you can check the output against what the demo loads.
+        Benchmarks tab races. The <Go /> below is really <code>examples/go/math/math.go</code> in
+        this repo, so you can check the output against what the demo loads.
       </p>
 
       <Step
@@ -127,8 +127,9 @@ export function GettingStartedPage() {
         badge="zero dependencies"
         description={
           <>
-            React 18 or 19 is the only peer dependency. ESM and CJS, with a{" "}
-            <code>"use client"</code> banner so it drops into the Next.js app router unchanged.
+            <Name>React</Name> 18 or 19 is the only peer dependency. <Name>ESM</Name> and{" "}
+            <Name>CJS</Name>, with a <code>"use client"</code> banner so it drops into the{" "}
+            <Name>Next.js</Name> app router unchanged.
           </>
         }
       >
@@ -145,8 +146,8 @@ export function GettingStartedPage() {
         badge="TinyGo"
         description={
           <>
-            Any toolchain that emits a plain <code>.wasm</code> works. This is TinyGo, where{" "}
-            <code>//go:wasmexport</code> is what makes a function callable from <Js />.
+            Any toolchain that emits a plain <code>.wasm</code> works. This is <Go>TinyGo</Go>,
+            where <code>//go:wasmexport</code> is what makes a function callable from <Js />.
           </>
         }
       >
@@ -164,19 +165,19 @@ export function GettingStartedPage() {
         title="Build and serve it"
         description={
           <>
-            The <code>wasm-unknown</code> target emits a module with no WASI imports and no glue
-            file, which is exactly what these hooks expect.
+            The <code>wasm-unknown</code> target emits a module with no <Name>WASI</Name> imports
+            and no glue file, which is exactly what these hooks expect.
           </>
         }
       >
         <CodeBlock code={BUILD} label="Shell" language="bash" />
         <p className="text-muted-foreground text-sm">
-          Then serve the file statically: <code>public/</code> in both Vite and Next.js. Not{" "}
-          <code>GOOS=js GOARCH=wasm</code> with standard Go. That exports nothing callable and needs
-          the <code>wasm_exec.js</code> runtime shim. Serve the file as{" "}
-          <code>application/wasm</code> if you can, and the hooks use <code>compileStreaming</code>;
-          if your host sends the wrong type they fall back to <code>compile()</code> rather than
-          failing.
+          Then serve the file statically: <code>public/</code> in both <Name>Vite</Name> and{" "}
+          <Name>Next.js</Name>. Not <code>GOOS=js GOARCH=wasm</code> with standard <Go />. That
+          exports nothing callable and needs the <code>wasm_exec.js</code> runtime shim. Serve the
+          file as <code>application/wasm</code> if you can, and the hooks use{" "}
+          <code>compileStreaming</code>; if your host sends the wrong type they fall back to{" "}
+          <code>compile()</code> rather than failing.
         </p>
       </Step>
 
