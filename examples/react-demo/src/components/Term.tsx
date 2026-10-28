@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { siC, siGo, siReact, siRust } from "simple-icons";
+import { siC, siGo, siReact, siRust, siWebassembly } from "simple-icons";
 import { cn } from "cn";
 
 /**
@@ -28,8 +28,13 @@ function Mark({ icon, className }: { icon: { path: string }; className?: string 
   );
 }
 
-export function Wasm({ children = "WebAssembly" }: { children?: string }) {
-  return <span className="text-wasm font-semibold">{children}</span>;
+export function Wasm({ children = "WebAssembly", icon }: { children?: string; icon?: boolean }) {
+  return (
+    <span className="text-wasm font-semibold whitespace-nowrap">
+      {icon && <Mark icon={siWebassembly} />}
+      {children}
+    </span>
+  );
 }
 
 export function Js({ children = "JS" }: { children?: string }) {

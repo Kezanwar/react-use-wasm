@@ -21,7 +21,7 @@ export function App() {
                 react-use-<span className="text-wasm">wasm</span>
               </h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                Typed <React_ icon /> hooks for <Wasm />. Write a module in <Go icon />,{" "}
+                Typed <React_ icon /> hooks for <Wasm icon />. Write a module in <Go icon />,{" "}
                 <Rust icon /> or <CLang icon />, then call it with full types, on the main thread or
                 in a worker.
               </p>
