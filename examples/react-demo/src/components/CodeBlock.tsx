@@ -54,7 +54,7 @@ export function HighlightedCode({
 export function CodeBlock({
   code,
   label = "JavaScript",
-  language = "jsx",
+  language = "tsx",
   className,
 }: {
   code: string;
