@@ -6,6 +6,7 @@ import type { MemoryProps } from "@/memory-exports";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
 const SNIPPET = `const reversed = withScope((s) => {
@@ -53,6 +54,9 @@ export function StringsExample({ e, withScope }: MemoryProps) {
         <CardTitle className="flex items-center gap-2">
           <Type className="text-primary size-4" />
           Strings
+          <Badge variant="secondary" className="font-mono">
+            useWasm
+          </Badge>
         </CardTitle>
         <CardDescription>
           A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back, so

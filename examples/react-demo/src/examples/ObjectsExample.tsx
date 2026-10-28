@@ -85,6 +85,9 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
         <CardTitle className="flex items-center gap-2">
           <Boxes className="text-primary size-4" />
           Objects, two ways
+          <Badge variant="secondary" className="font-mono">
+            useWasm
+          </Badge>
         </CardTitle>
         <CardDescription>
           There is no one way to pass a struct. The trade-off is real and worth seeing: agreeing on

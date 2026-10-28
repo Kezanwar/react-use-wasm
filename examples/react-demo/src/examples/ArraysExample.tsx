@@ -5,6 +5,7 @@ import type { MemoryProps } from "@/memory-exports";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
 const SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
@@ -55,6 +56,9 @@ export function ArraysExample({ e, withScope }: MemoryProps) {
         <CardTitle className="flex items-center gap-2">
           <Brackets className="text-primary size-4" />
           Arrays
+          <Badge variant="secondary" className="font-mono">
+            useWasm
+          </Badge>
         </CardTitle>
         <CardDescription>
           An <code>Int32Array</code> is written into linear memory and passed as{" "}
