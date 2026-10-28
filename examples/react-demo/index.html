@@ -10,6 +10,18 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Dark by default. The toggle writes "light" to localStorage; the OS
+      // preference is deliberately not consulted. Inline and before <body>
+      // so the first paint is already the right theme.
+      try {
+        if (localStorage.getItem("theme") !== "light") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

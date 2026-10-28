@@ -4,10 +4,17 @@ import { Button } from "@/components/ui/button";
 
 type Theme = "light" | "dark";
 
+/**
+ * Dark unless the visitor has chosen light here before. The OS preference is
+ * deliberately ignored: the palette was designed dark, and index.html sets
+ * the class by the same rule before first paint.
+ */
 function initialTheme(): Theme {
-  const saved = localStorage.getItem("theme");
-  if (saved === "light" || saved === "dark") return saved;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  try {
+    return localStorage.getItem("theme") === "light" ? "light" : "dark";
+  } catch {
+    return "dark";
+  }
 }
 
 export function ThemeToggle() {
@@ -15,7 +22,12 @@ export function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // Private mode or blocked storage: the toggle still works, it just
+      // will not be remembered.
+    }
   }, [theme]);
 
   return (
