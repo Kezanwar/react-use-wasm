@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 const MS = /\d+(\.\d+)?\s*ms/;
+
+/** The page lands on Getting started, so the benchmark tests open the tab. */
+async function openBenchmarks(page: import("@playwright/test").Page) {
+  await page.goto("/");
+  await page.getByTestId("tab-benchmarks").click();
+}
 /** toLocaleString inserts group separators, so match the digits loosely. */
 const digits = (n: number) => new RegExp(String(n).split("").join("[,.\\s]?"));
 
@@ -22,6 +28,10 @@ test("the two tabs load two different modules", async ({ page }) => {
   });
 
   await page.goto("/");
+  // Getting started is all prose: nothing is fetched until a tab needs it.
+  expect(fetched).toEqual([]);
+
+  await page.getByTestId("tab-benchmarks").click();
   await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
   expect(fetched).toContain("/math.wasm");
   // The benchmark must not pull in the 186 kB module: that is the whole
@@ -34,7 +44,7 @@ test("the two tabs load two different modules", async ({ page }) => {
 });
 
 test("useWasm panel benchmarks JS against wasm on the main thread", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const run = page.getByTestId("main-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
@@ -54,7 +64,7 @@ test("useWasm panel benchmarks JS against wasm on the main thread", async ({ pag
 });
 
 test("useWasmWorker benchmarks both workers without blocking the main thread", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const run = page.getByTestId("worker-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
@@ -80,7 +90,7 @@ test("useWasmWorker benchmarks both workers without blocking the main thread", a
 });
 
 test("Cancel terminates a running call and both workers come back", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const run = page.getByTestId("worker-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
@@ -108,7 +118,7 @@ test("imports reach the module on both threads", async ({ page }) => {
   const consoleLines: string[] = [];
   page.on("console", (msg) => consoleLines.push(msg.text()));
 
-  await page.goto("/");
+  await openBenchmarks(page);
 
   // Main thread: a plain function in the `imports` object.
   const mainRun = page.getByTestId("imports-main-run");
@@ -136,7 +146,7 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
   page,
 }) => {
   await page.setViewportSize({ width: 900, height: 820 });
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const inline = page.getByTestId("frames");
   const floating = page.getByTestId("frames-floating");
@@ -161,11 +171,12 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
 test("tabs switch between the four pages", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
-
-  await page.getByTestId("tab-start").click();
+  // Getting started is the landing tab.
   await expect(page.getByTestId("start-code-tabs")).toBeVisible();
-  await expect(page.getByTestId("main-run")).toBeHidden();
+
+  await page.getByTestId("tab-benchmarks").click();
+  await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("start-code-tabs")).toBeHidden();
 
   await page.getByTestId("tab-examples").click();
   await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
@@ -255,7 +266,7 @@ test("the Examples worker card runs fib off the main thread", async ({ page }) =
 });
 
 test("the n input can be emptied, and Run waits until it is not", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const n = page.getByTestId("main-n");
   const run = page.getByTestId("main-run");
@@ -350,7 +361,6 @@ test("the Examples page leads with a module that needs no memory", async ({ page
 
 test("Getting started walks from install to a running call", async ({ page }) => {
   await page.goto("/");
-  await page.getByTestId("tab-start").click();
 
   // Five numbered steps, in order.
   await expect(page.getByText("Install", { exact: true })).toBeVisible();

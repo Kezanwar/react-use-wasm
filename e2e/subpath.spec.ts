@@ -30,7 +30,8 @@ for (const [label, base] of [
 
     await page.goto(base);
 
-    // Benchmarks tab
+    // Benchmarks tab, which is no longer the landing tab.
+    await page.getByTestId("tab-benchmarks").click();
     await expect(page.getByTestId("main-run")).toBeEnabled({ timeout: 20_000 });
     await page.getByTestId("main-n").fill("28");
     await page.getByTestId("main-run").click();

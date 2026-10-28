@@ -32,13 +32,13 @@ export function App() {
           </div>
         </header>
 
-        <Tabs defaultValue="benchmarks">
+        <Tabs defaultValue="start">
           <TabsList>
-            <TabsTrigger value="benchmarks" data-testid="tab-benchmarks">
-              <Gauge className="size-4" /> Benchmarks
-            </TabsTrigger>
             <TabsTrigger value="start" data-testid="tab-start">
               <Rocket className="size-4" /> Getting started
+            </TabsTrigger>
+            <TabsTrigger value="benchmarks" data-testid="tab-benchmarks">
+              <Gauge className="size-4" /> Benchmarks
             </TabsTrigger>
             <TabsTrigger value="examples" data-testid="tab-examples">
               <Puzzle className="size-4" /> Examples
@@ -48,12 +48,12 @@ export function App() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="benchmarks" className="mt-5">
-            <BenchmarksPage />
-          </TabsContent>
-
           <TabsContent value="start" className="mt-5">
             <GettingStartedPage />
+          </TabsContent>
+
+          <TabsContent value="benchmarks" className="mt-5">
+            <BenchmarksPage />
           </TabsContent>
 
           <TabsContent value="examples" className="mt-5">

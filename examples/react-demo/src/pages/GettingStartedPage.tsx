@@ -18,6 +18,7 @@ function Step({
   title,
   badge,
   description,
+  last,
   children,
 }: {
   n: number;
@@ -25,23 +26,34 @@ function Step({
   title: string;
   badge?: string;
   description: ReactNode;
+  /** Suppresses the connector below the card. */
+  last?: boolean;
   children: ReactNode;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2">
-          <span className="bg-primary text-primary-foreground tabular flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-            {n}
-          </span>
-          {icon}
-          <span>{title}</span>
-          {badge && <Badge variant="secondary">{badge}</Badge>}
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
+    <div className="relative">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex flex-wrap items-center gap-2">
+            <span className="bg-primary text-primary-foreground tabular flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+              {n}
+            </span>
+            {icon}
+            <span>{title}</span>
+            {badge && <Badge variant="secondary">{badge}</Badge>}
+          </CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">{children}</CardContent>
+      </Card>
+
+      {/*
+       * Connector into the next card. left-9 lines it up with the middle
+       * of the number badge (24px of card padding plus half of its 24px
+       * width), and h-6 is exactly the space-y-6 gap it has to cross.
+       */}
+      {!last && <div aria-hidden className="bg-border absolute top-full left-9 h-6 w-px" />}
+    </div>
   );
 }
 
@@ -184,6 +196,7 @@ export function GettingStartedPage() {
 
       <Step
         n={5}
+        last
         icon={<Play className="text-primary size-4" />}
         title="Call it"
         description={
