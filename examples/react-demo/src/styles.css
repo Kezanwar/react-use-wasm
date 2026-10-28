@@ -22,7 +22,7 @@
   --secondary: oklch(0.96 0.01 280);
   --secondary-foreground: oklch(0.25 0.02 280);
   --muted: oklch(0.96 0.01 280);
-  --muted-foreground: oklch(0.53 0.02 280);
+  --muted-foreground: oklch(46.579% 0.01636 276.741);
   --accent: oklch(0.95 0.03 285);
   --accent-foreground: oklch(0.35 0.14 285);
   --destructive: oklch(0.58 0.22 27);
@@ -34,6 +34,12 @@
   --js-soft: oklch(0.96 0.045 88);
   --wasm: oklch(0.54 0.23 285);
   --wasm-soft: oklch(0.96 0.03 285);
+  /* Language brand colours, darkened enough to read on white. Go's
+     cyan-blue, Rust's red-orange (pushed off the --code orange so the two
+     never read as the same thing), and C's steel blue. */
+  --go: oklch(0.58 0.12 222);
+  --rust: oklch(0.52 0.17 30);
+  --clang: oklch(0.52 0.06 252);
   /* Inline code in prose. Deliberately a redder orange than --js, which is
      a gold, so the two never read as the same thing. The chip around it is
      warm rather than neutral, so it sits with the text and not with the
@@ -66,7 +72,7 @@
   --secondary: oklch(0.27 0.02 280);
   --secondary-foreground: oklch(0.96 0.005 280);
   --muted: oklch(0.27 0.02 280);
-  --muted-foreground: oklch(0.69 0.015 280);
+  --muted-foreground: oklch(73.294% 0.01764 274.72);
   --accent: oklch(0.3 0.04 285);
   --accent-foreground: oklch(0.9 0.05 285);
   --destructive: oklch(0.65 0.2 25);
@@ -78,6 +84,9 @@
   --js-soft: oklch(0.3 0.05 88);
   --wasm: oklch(0.72 0.17 288);
   --wasm-soft: oklch(0.3 0.06 288);
+  --go: oklch(0.78 0.11 218);
+  --rust: oklch(0.73 0.14 32);
+  --clang: oklch(0.78 0.05 252);
   --code: oklch(0.76 0.13 50);
   --code-bg: oklch(0.25 0.018 50);
   --code-border: oklch(0.37 0.03 50);
@@ -119,6 +128,9 @@
   --color-js-soft: var(--js-soft);
   --color-wasm: var(--wasm);
   --color-wasm-soft: var(--wasm-soft);
+  --color-go: var(--go);
+  --color-rust: var(--rust);
+  --color-clang: var(--clang);
   --color-code: var(--code);
 
   --radius-sm: calc(var(--radius) - 4px);

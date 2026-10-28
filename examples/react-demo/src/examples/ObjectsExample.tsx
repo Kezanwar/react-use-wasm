@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Boxes, TriangleAlert } from "lucide-react";
-import { Js, Wasm } from "@/components/Term";
+import { Go, Js, Wasm } from "@/components/Term";
 import { stringVal } from "react-use-wasm";
 import type { MemoryProps } from "@/memory-exports";
 import { CodeTabs } from "@/components/CodeBlock";
@@ -187,7 +187,8 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
             <h3 className="font-semibold">JSON</h3>
             <Badge variant="destructive">+150 kB</Badge>
             <span className="text-muted-foreground text-xs">
-              easy, but <code>encoding/json</code> drags in Go's reflection
+              easy, but <code>encoding/json</code> drags in <Go />
+              's reflection
             </span>
           </div>
 

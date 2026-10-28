@@ -387,3 +387,25 @@ test("Getting started walks from install to a running call", async ({ page }) =>
   await page.getByTestId("tab-api").click();
   await expect(page.getByText("npm install react-use-wasm")).toHaveCount(0);
 });
+
+test("the LLM brief can be copied from the header", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/");
+
+  const button = page.getByTestId("copy-llm");
+
+  // Icon-only, so the tooltip is the only thing that says what it does.
+  await button.hover();
+  await expect(page.getByText("written for an LLM")).toBeVisible();
+
+  await button.click();
+  // The icon swaps to a green tick to confirm.
+  await expect(button.locator("svg.text-emerald-500")).toBeVisible();
+
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  // Enough of it to prove the real file was inlined, not a placeholder.
+  expect(text).toContain("# react-use-wasm");
+  expect(text).toContain("useWasmWorker");
+  expect(text).toContain("withScope");
+  expect(text.length).toBeGreaterThan(4000);
+});

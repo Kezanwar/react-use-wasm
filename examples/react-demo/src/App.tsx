@@ -1,6 +1,8 @@
 import { BookMarked, CodeXml, Gauge, Puzzle, Rocket } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Wasm } from "@/components/Term";
+import { CopyForLlm } from "@/components/CopyForLlm";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CLang, Go, React_, Rust, Wasm } from "@/components/Term";
 import { BenchmarksPage } from "@/pages/BenchmarksPage";
 import { ExamplesPage } from "@/pages/ExamplesPage";
 import { ApiPage } from "@/pages/ApiPage";
@@ -10,61 +12,99 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function App() {
   return (
-    <div className="min-h-dvh px-4 py-10">
-      <main className="mx-auto max-w-3xl space-y-6">
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">
-              react-use-<span className="text-wasm">wasm</span>
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Typed React hooks for <Wasm />, against a TinyGo module built for{" "}
-              <code>wasm-unknown</code>.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button variant="outline" size="icon" asChild aria-label="Source on GitHub">
-              <a href="https://github.com/Kezanwar/react-use-wasm" target="_blank" rel="noreferrer">
-                <CodeXml className="size-4" />
-              </a>
-            </Button>
-            <ThemeToggle />
-          </div>
-        </header>
+    <TooltipProvider>
+      <div className="min-h-dvh px-4 py-10">
+        <main className="mx-auto max-w-3xl space-y-6">
+          <header className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight">
+                react-use-<span className="text-wasm">wasm</span>
+              </h1>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Typed <React_ icon /> hooks for <Wasm icon />. Write a module in <Go icon />,{" "}
+                <Rust icon /> or <CLang icon />, then call it with full types, on the main thread or
+                in a worker.
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <CopyForLlm />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Copy a brief about this package, written for an LLM. Paste it into a chat before
+                  asking for code.
+                </TooltipContent>
+              </Tooltip>
 
-        <Tabs defaultValue="start">
-          <TabsList>
-            <TabsTrigger value="start" data-testid="tab-start">
-              <Rocket className="size-4" /> Getting started
-            </TabsTrigger>
-            <TabsTrigger value="benchmarks" data-testid="tab-benchmarks">
-              <Gauge className="size-4" /> Benchmarks
-            </TabsTrigger>
-            <TabsTrigger value="examples" data-testid="tab-examples">
-              <Puzzle className="size-4" /> Examples
-            </TabsTrigger>
-            <TabsTrigger value="api" data-testid="tab-api">
-              <BookMarked className="size-4" /> API
-            </TabsTrigger>
-          </TabsList>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" asChild aria-label="Source on GitHub">
+                    <a
+                      href="https://github.com/Kezanwar/react-use-wasm"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <CodeXml className="size-4" />
+                    </a>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Source on GitHub</TooltipContent>
+              </Tooltip>
 
-          <TabsContent value="start" className="mt-5">
-            <GettingStartedPage />
-          </TabsContent>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <ThemeToggle />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Switch between dark and light</TooltipContent>
+              </Tooltip>
+            </div>
+          </header>
 
-          <TabsContent value="benchmarks" className="mt-5">
-            <BenchmarksPage />
-          </TabsContent>
+          <Tabs defaultValue="start">
+            {/*
+              Wraps rather than overflowing: four tabs do not fit a phone.
+              The variant class has to be overridden by name, since the
+              component pins the height through a group-data selector that
+              a plain h-auto does not replace.
+            */}
+            <TabsList className="h-auto flex-wrap group-data-[orientation=horizontal]/tabs:h-auto">
+              <TabsTrigger value="start" data-testid="tab-start">
+                <Rocket className="size-4" /> Getting started
+              </TabsTrigger>
+              <TabsTrigger value="benchmarks" data-testid="tab-benchmarks">
+                <Gauge className="size-4" /> Benchmarks
+              </TabsTrigger>
+              <TabsTrigger value="examples" data-testid="tab-examples">
+                <Puzzle className="size-4" /> Examples
+              </TabsTrigger>
+              <TabsTrigger value="api" data-testid="tab-api">
+                <BookMarked className="size-4" /> API
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="examples" className="mt-5">
-            <ExamplesPage />
-          </TabsContent>
+            <TabsContent value="start" className="mt-5">
+              <GettingStartedPage />
+            </TabsContent>
 
-          <TabsContent value="api" className="mt-5">
-            <ApiPage />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+            <TabsContent value="benchmarks" className="mt-5">
+              <BenchmarksPage />
+            </TabsContent>
+
+            <TabsContent value="examples" className="mt-5">
+              <ExamplesPage />
+            </TabsContent>
+
+            <TabsContent value="api" className="mt-5">
+              <ApiPage />
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
