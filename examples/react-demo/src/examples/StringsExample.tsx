@@ -136,7 +136,7 @@ export function StringsExample({ e, withScope }: MemoryProps) {
           </div>
         </dl>
 
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           The two calls share one buffer, so the reverse runs on the bytes <code>upperInPlace</code>{" "}
           already uppercased. That is in-place mutation doing exactly what it says.
         </p>

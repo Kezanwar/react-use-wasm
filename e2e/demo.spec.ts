@@ -311,17 +311,32 @@ test("the Examples page leads with a module that needs no memory", async ({ page
   await page.goto("/");
   await page.getByTestId("tab-examples").click();
 
-  // Computed during render: there is no button to press.
-  await expect(page.getByTestId("numbers-add")).toHaveText("5", { timeout: 15_000 });
-  await expect(page.getByTestId("numbers-scale")).toHaveText("6");
+  const run = page.getByTestId("numbers-run");
+  await expect(run).toBeEnabled({ timeout: 20_000 });
+  await run.click();
+
+  // Both hooks, same numbers: that is the claim the card makes.
+  for (const hook of ["numbers-main", "numbers-worker"]) {
+    await expect(page.getByTestId(`${hook}-add`)).toHaveText("5", { timeout: 20_000 });
+    await expect(page.getByTestId(`${hook}-scale`)).toHaveText("6");
+  }
 
   await page.getByTestId("numbers-a").fill("7");
-  await expect(page.getByTestId("numbers-add")).toHaveText("10");
-  await expect(page.getByTestId("numbers-scale")).toHaveText("21");
+  await run.click();
+  for (const hook of ["numbers-main", "numbers-worker"]) {
+    await expect(page.getByTestId(`${hook}-add`)).toHaveText("10", { timeout: 20_000 });
+    await expect(page.getByTestId(`${hook}-scale`)).toHaveText("21");
+  }
+
+  // The code block shows the same thing written for either hook.
+  const tabs = page.getByTestId("numbers-code-tabs");
+  await expect(tabs).toContainText("useWasm<MathExports>");
+  await tabs.getByRole("tab", { name: "useWasmWorker" }).click();
+  await expect(tabs).toContainText("await call(\"add\", a, b)");
 
   // It comes before the memory examples, which is the whole point.
   const order = await page.evaluate(() => {
-    const numbers = document.querySelector('[data-testid="numbers-add"]')!;
+    const numbers = document.querySelector('[data-testid="numbers-run"]')!;
     const arrays = document.querySelector('[data-testid="arrays-run"]')!;
     // Node.DOCUMENT_POSITION_FOLLOWING
     return (numbers.compareDocumentPosition(arrays) & 4) !== 0;

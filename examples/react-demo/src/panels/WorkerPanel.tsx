@@ -175,7 +175,7 @@ export function WorkerPanel() {
           </p>
         )}
 
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           Timings are wall clock from the main thread, so they include the postMessage round trip
           (well under a millisecond at these sizes). Try n = 42, then hit Cancel halfway.
         </p>

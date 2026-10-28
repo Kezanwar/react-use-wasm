@@ -109,7 +109,7 @@ function MemorySection() {
       <StringsExample e={e} withScope={wasm.withScope} />
       <ObjectsExample e={e} withScope={wasm.withScope} />
 
-      <p className="text-muted-foreground text-xs">
+      <p className="text-muted-foreground text-sm">
         One rule catches everyone: never cache a typed-array view. <code>memory.grow()</code>{" "}
         detaches the old <code>ArrayBuffer</code> and every view onto it becomes zero-length. Every
         helper takes a fresh view at the moment it is used, and <code>read()</code> always copies

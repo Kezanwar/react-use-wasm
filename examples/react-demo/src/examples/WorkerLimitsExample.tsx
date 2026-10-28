@@ -127,7 +127,7 @@ export function WorkerLimitsExample() {
           </div>
         </dl>
 
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           One number in, one number out, so nothing here needs linear memory. Push n to 40 and the
           page still scrolls, which is the whole reason the hook exists. The{" "}
           <strong className="text-foreground">Benchmarks</strong> tab races this against the same

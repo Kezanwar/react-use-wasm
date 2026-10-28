@@ -226,7 +226,7 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
             ]}
           />
 
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground text-sm">
             This single feature is why the demo module is 186 kB rather than 15 kB. For a module you
             ship, that is usually the deciding argument for the struct layout above.
           </p>
