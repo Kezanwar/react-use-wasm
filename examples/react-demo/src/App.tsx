@@ -2,7 +2,7 @@ import { BookMarked, CodeXml, Gauge, Puzzle, Rocket } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CopyForLlm } from "@/components/CopyForLlm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Go, Name, Wasm } from "@/components/Term";
+import { CLang, Go, Name, Rust, Wasm } from "@/components/Term";
 import { BenchmarksPage } from "@/pages/BenchmarksPage";
 import { ExamplesPage } from "@/pages/ExamplesPage";
 import { ApiPage } from "@/pages/ApiPage";
@@ -21,9 +21,8 @@ export function App() {
                 react-use-<span className="text-wasm">wasm</span>
               </h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                Typed <Name>React</Name> hooks for <Wasm />. Write a module in <Go />,{" "}
-                <Name>Rust</Name> or <Name>C</Name>, then call it with full types, on the main
-                thread or in a worker.
+                Typed <Name>React</Name> hooks for <Wasm />. Write a module in <Go />, <Rust /> or{" "}
+                <CLang />, then call it with full types, on the main thread or in a worker.
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
