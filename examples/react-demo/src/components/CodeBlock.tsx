@@ -1,5 +1,5 @@
 import { Check, Copy, FileCode2 } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Highlight, type PrismTheme } from "prism-react-renderer";
 import { cn } from "cn";
 
@@ -46,21 +46,25 @@ export function HighlightedCode({
 }
 
 /**
- * Highlighted source in an editor-style frame. The chrome is the point: in
- * a page where prose already contains coloured identifiers, a block needs a
- * border and a title bar to read as "this is a file", not "this is a
- * sentence".
+ * The editor-style frame. The chrome is the point: in a page where prose
+ * already contains coloured identifiers, a block needs a border and a title
+ * bar to read as "this is a file", not "this is a sentence".
+ *
+ * `title` is whatever goes to the left of the Copy button: a language name,
+ * or the tab strip below.
  */
-export function CodeBlock({
+function Frame({
+  title,
   code,
-  label = "JavaScript",
-  language = "tsx",
+  language,
   className,
+  testId,
 }: {
+  title: ReactNode;
   code: string;
-  label?: string;
-  language?: string;
+  language: string;
   className?: string;
+  testId?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -71,17 +75,18 @@ export function CodeBlock({
   };
 
   return (
-    <div className={cn("border-border overflow-hidden rounded-xl border shadow-sm", className)}>
+    <div
+      data-testid={testId}
+      className={cn("border-border overflow-hidden rounded-xl border shadow-sm", className)}
+    >
       <div className="border-border bg-muted flex items-center gap-2 border-b py-1.5 pr-1.5 pl-3">
         <FileCode2 className="text-muted-foreground size-3.5 shrink-0" />
-        <span className="text-muted-foreground font-mono text-[11px] tracking-wide uppercase">
-          {label}
-        </span>
+        {title}
         <button
           type="button"
           onClick={copy}
           aria-label="Copy code"
-          className="text-muted-foreground hover:bg-background hover:text-foreground ml-auto flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
+          className="text-muted-foreground hover:bg-background hover:text-foreground ml-auto flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
         >
           {copied ? (
             <>
@@ -101,5 +106,91 @@ export function CodeBlock({
         className="bg-card p-3.5 text-[12.5px] leading-relaxed"
       />
     </div>
+  );
+}
+
+export function CodeBlock({
+  code,
+  label = "JavaScript",
+  language = "tsx",
+  className,
+}: {
+  code: string;
+  label?: string;
+  language?: string;
+  className?: string;
+}) {
+  return (
+    <Frame
+      code={code}
+      language={language}
+      className={className}
+      title={
+        <span className="text-muted-foreground font-mono text-[11px] tracking-wide uppercase">
+          {label}
+        </span>
+      }
+    />
+  );
+}
+
+export interface CodeVariant {
+  /** Tab label, e.g. "withScope". */
+  label: string;
+  code: string;
+  language?: string;
+}
+
+/**
+ * The same example written two ways, switched in place.
+ *
+ * Stacking both blocks would make the longer one look like more work for
+ * its own sake; flipping between them in the same frame makes the
+ * difference the only thing that moves.
+ */
+export function CodeTabs({
+  variants,
+  className,
+  testId,
+}: {
+  variants: CodeVariant[];
+  className?: string;
+  testId?: string;
+}) {
+  const [index, setIndex] = useState(0);
+  const active = variants[Math.min(index, variants.length - 1)]!;
+
+  return (
+    <Frame
+      code={active.code}
+      language={active.language ?? "tsx"}
+      className={className}
+      testId={testId}
+      title={
+        <div
+          role="tablist"
+          aria-label="Code style"
+          className="border-border flex min-w-0 items-center gap-0.5 overflow-hidden rounded-md border p-0.5"
+        >
+          {variants.map((variant, i) => (
+            <button
+              key={variant.label}
+              type="button"
+              role="tab"
+              aria-selected={i === index}
+              onClick={() => setIndex(i)}
+              className={cn(
+                "truncate rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors",
+                i === index
+                  ? "bg-background text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {variant.label}
+            </button>
+          ))}
+        </div>
+      }
+    />
   );
 }

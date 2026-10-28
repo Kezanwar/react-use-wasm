@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Brackets } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
 import type { MemoryProps } from "@/memory-exports";
-import { CodeBlock } from "@/components/CodeBlock";
+import { CodeTabs } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,28 @@ const { total, sorted } = withScope((s) => {
 
   return { total, sorted: [...xs.read()] };        // read() copies out
 });`;
+
+const BY_HAND = `const xs = Int32Array.from([5, 3, 9, 1, 7]);
+
+// alloc takes BYTES. The wasm functions take an ELEMENT COUNT.
+// Those are 4x apart and nothing checks which one you passed.
+const ptr = exports.alloc(xs.byteLength);
+
+let total, sorted;
+try {
+  new Int32Array(exports.memory.buffer, ptr, xs.length).set(xs);
+
+  total = exports.sumInt32(ptr, xs.length);
+  exports.sortInt32(ptr, xs.length);
+
+  // slice() copies. A view would dangle the moment we free below,
+  // silently reading zeroes rather than throwing.
+  sorted = [...new Int32Array(
+    exports.memory.buffer.slice(ptr, ptr + xs.byteLength)
+  )];
+} finally {
+  exports.free(ptr);   // easy to forget, easier to skip on a throw
+}`;
 
 const parse = (text: string): Int32Array =>
   Int32Array.from(
@@ -102,7 +124,13 @@ export function ArraysExample({ e, withScope }: MemoryProps) {
           </div>
         </dl>
 
-        <CodeBlock code={SNIPPET} label="TypeScript" />
+        <CodeTabs
+          testId="arrays-code-tabs"
+          variants={[
+            { label: "withScope", code: SNIPPET },
+            { label: "by hand", code: BY_HAND },
+          ]}
+        />
       </CardContent>
     </Card>
   );

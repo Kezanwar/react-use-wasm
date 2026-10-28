@@ -279,3 +279,30 @@ test("the n input can be emptied, and Run waits until it is not", async ({ page 
   await n.blur();
   await expect(n).toHaveValue("42");
 });
+
+test("each memory example can be flipped between withScope and by hand", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+  await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
+
+  const block = page.getByTestId("arrays-code-tabs");
+  const scoped = block.getByRole("tab", { name: "withScope" });
+  const byHand = block.getByRole("tab", { name: "by hand" });
+
+  // withScope is what the page argues for, so it is what you land on.
+  await expect(scoped).toHaveAttribute("aria-selected", "true");
+  await expect(block).toContainText("s.i32ArrayArg");
+  await expect(block).not.toContainText("exports.free");
+
+  await byHand.click();
+  await expect(byHand).toHaveAttribute("aria-selected", "true");
+  // The whole point of the comparison: the manual version has to free.
+  await expect(block).toContainText("exports.free(ptr)");
+  await expect(block).toContainText("xs.byteLength");
+  await expect(block).not.toContainText("s.i32ArrayArg");
+
+  // All four memory examples get the pair.
+  for (const id of ["strings-code-tabs", "struct-code-tabs", "json-code-tabs"]) {
+    await expect(page.getByTestId(id).getByRole("tab", { name: "by hand" })).toBeVisible();
+  }
+});

@@ -3,7 +3,7 @@ import { Boxes, TriangleAlert } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
 import { stringVal } from "react-use-wasm";
 import type { MemoryProps } from "@/memory-exports";
-import { CodeBlock } from "@/components/CodeBlock";
+import { CodeTabs } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,46 @@ const JSON_SNIPPET = `const stats = withScope((s) => {
   // and stringVal turns that into null.
   return stringVal(exports, exports.jsonStats(json.ptr, json.len));
 });`;
+
+const STRUCT_BY_HAND = `const points = Float64Array.from([0,0, 10,0, 10,10, 0,10]);
+
+const ptr = exports.alloc(points.byteLength);
+const out = exports.alloc(16);          // room for two float64s
+let x, y;
+try {
+  new Float64Array(exports.memory.buffer, ptr, points.length).set(points);
+
+  // points.length is 8 numbers, but centroid counts POINTS, so 4.
+  exports.centroid(ptr, points.length / 2, out);
+
+  [x, y] = new Float64Array(exports.memory.buffer.slice(out, out + 16));
+} finally {
+  exports.free(out);    // two allocations, two frees, right order
+  exports.free(ptr);
+}`;
+
+const JSON_BY_HAND = `const bytes = new TextEncoder().encode(JSON.stringify(people));
+
+const ptr = exports.alloc(bytes.byteLength);
+let stats = null;
+try {
+  new Uint8Array(exports.memory.buffer).set(bytes, ptr);
+
+  const packed = exports.jsonStats(ptr, bytes.byteLength);
+  if (packed !== 0n) {                  // 0n means it would not parse
+    const outPtr = Number(packed >> 32n);
+    const outLen = Number(packed & 0xffffffffn);
+    try {
+      stats = new TextDecoder().decode(
+        new Uint8Array(exports.memory.buffer.slice(outPtr, outPtr + outLen))
+      );
+    } finally {
+      exports.free(outPtr);
+    }
+  }
+} finally {
+  exports.free(ptr);
+}`;
 
 const DEFAULT_POINTS = "0,0  10,0  10,10  0,10";
 const DEFAULT_PEOPLE = `[
@@ -122,7 +162,13 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
             </span>
           </div>
 
-          <CodeBlock code={STRUCT_SNIPPET} />
+          <CodeTabs
+            testId="struct-code-tabs"
+            variants={[
+              { label: "withScope", code: STRUCT_SNIPPET },
+              { label: "by hand", code: STRUCT_BY_HAND },
+            ]}
+          />
         </section>
 
         <Separator />
@@ -164,7 +210,13 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
             )}
           </div>
 
-          <CodeBlock code={JSON_SNIPPET} />
+          <CodeTabs
+            testId="json-code-tabs"
+            variants={[
+              { label: "withScope", code: JSON_SNIPPET },
+              { label: "by hand", code: JSON_BY_HAND },
+            ]}
+          />
 
           <p className="text-muted-foreground text-xs">
             This single feature is why the demo module is 186 kB rather than 15 kB. For a module you

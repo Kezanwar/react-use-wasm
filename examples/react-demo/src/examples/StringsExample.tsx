@@ -3,7 +3,7 @@ import { Type } from "lucide-react";
 import { Js } from "@/components/Term";
 import { stringVal, unpack } from "react-use-wasm";
 import type { MemoryProps } from "@/memory-exports";
-import { CodeBlock } from "@/components/CodeBlock";
+import { CodeTabs } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,33 @@ const SNIPPET = `const reversed = withScope((s) => {
   // stringVal reads it and frees what the module allocated.
   return stringVal(exports, exports.reverseString(text.ptr, text.len));
 });`;
+
+const BY_HAND = `// .length is characters. The allocation needs BYTES, and the two
+// differ the moment anyone types a non-ASCII character.
+const bytes = new TextEncoder().encode("hello wasm");
+
+const ptr = exports.alloc(bytes.byteLength);
+let reversed;
+try {
+  new Uint8Array(exports.memory.buffer).set(bytes, ptr);
+
+  exports.upperInPlace(ptr, bytes.byteLength);
+
+  // One i64 carries both halves: offset high, length low.
+  const packed = exports.reverseString(ptr, bytes.byteLength);
+  const outPtr = Number(packed >> 32n);
+  const outLen = Number(packed & 0xffffffffn);
+
+  try {
+    reversed = new TextDecoder().decode(
+      new Uint8Array(exports.memory.buffer.slice(outPtr, outPtr + outLen))
+    );
+  } finally {
+    exports.free(outPtr);   // Go allocated this one, not us
+  }
+} finally {
+  exports.free(ptr);
+}`;
 
 export function StringsExample({ e, withScope }: MemoryProps) {
   const [text, setText] = useState("hello wasm");
@@ -110,7 +137,13 @@ export function StringsExample({ e, withScope }: MemoryProps) {
           already uppercased. That is in-place mutation doing exactly what it says.
         </p>
 
-        <CodeBlock code={SNIPPET} />
+        <CodeTabs
+          testId="strings-code-tabs"
+          variants={[
+            { label: "withScope", code: SNIPPET },
+            { label: "by hand", code: BY_HAND },
+          ]}
+        />
       </CardContent>
     </Card>
   );
