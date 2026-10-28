@@ -19,9 +19,11 @@ const SNIPPET = `const { status, call, terminate } = useWasmWorker<MathExports>(
 // main thread keeps painting the whole time.
 const value = await call("fib", 32);   // Promise<number>
 
-// This does not work. There is no exports.memory on this side: the
-// module lives in the worker, and a WebAssembly.Memory is not
-// structured-cloneable, so it never comes back.
+// ---------------------------------------------------------------
+// Anything bigger does not. There is no exports.memory on this side:
+// the module lives in the worker, and a WebAssembly.Memory is not
+// structured-cloneable, so it never comes back. Neither of these
+// works today:
 //
 //   withScope(...)             <- useWasm only
 //   call("sumInt32", xs)       <- xs arrives as NaN, not an array
