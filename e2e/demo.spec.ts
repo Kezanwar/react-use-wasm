@@ -306,3 +306,25 @@ test("each memory example can be flipped between withScope and by hand", async (
     await expect(page.getByTestId(id).getByRole("tab", { name: "by hand" })).toBeVisible();
   }
 });
+
+test("the Examples page leads with a module that needs no memory", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  // Computed during render: there is no button to press.
+  await expect(page.getByTestId("numbers-add")).toHaveText("5", { timeout: 15_000 });
+  await expect(page.getByTestId("numbers-scale")).toHaveText("6");
+
+  await page.getByTestId("numbers-a").fill("7");
+  await expect(page.getByTestId("numbers-add")).toHaveText("10");
+  await expect(page.getByTestId("numbers-scale")).toHaveText("21");
+
+  // It comes before the memory examples, which is the whole point.
+  const order = await page.evaluate(() => {
+    const numbers = document.querySelector('[data-testid="numbers-add"]')!;
+    const arrays = document.querySelector('[data-testid="arrays-run"]')!;
+    // Node.DOCUMENT_POSITION_FOLLOWING
+    return (numbers.compareDocumentPosition(arrays) & 4) !== 0;
+  });
+  expect(order).toBe(true);
+});
