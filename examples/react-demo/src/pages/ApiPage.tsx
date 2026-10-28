@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Boxes, Cpu, Download, MemoryStick, Wrench } from "lucide-react";
+import { Boxes, Cpu, MemoryStick, Wrench } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
 import { CodeBlock, HighlightedCode } from "@/components/CodeBlock";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,14 +39,12 @@ function Entry({
       {description && <p className="text-muted-foreground text-sm">{description}</p>}
       <HighlightedCode
         code={signature}
-        className="border-border bg-muted/50 rounded-md border px-3 py-2 text-[12px] leading-relaxed"
+        className="rounded-md border px-3 py-2 text-[12px] leading-relaxed"
       />
       <div className="text-muted-foreground space-y-2 text-sm">{children}</div>
     </div>
   );
 }
-
-const INSTALL = `pnpm add react-use-wasm`;
 
 const USE_WASM = `const { status, isReady, exports, error, call, withScope, reload } =
   useWasm<MathExports>("/math.wasm", {
@@ -113,22 +111,6 @@ unpack(packed)               // { ptr, len }, if you want it raw`;
 export function ApiPage() {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="text-primary size-4" />
-            Install
-          </CardTitle>
-          <CardDescription>
-            React 18 or 19 as a peer dependency, and no others. ESM and CJS, with a{" "}
-            <code>"use client"</code> banner so it drops into a Next.js app router without ceremony.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CodeBlock code={INSTALL} label="Shell" language="bash" />
-        </CardContent>
-      </Card>
-
       {/* ------------------------------------------------------------ */}
       <Card>
         <CardHeader>

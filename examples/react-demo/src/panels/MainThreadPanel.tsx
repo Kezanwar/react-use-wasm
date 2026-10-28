@@ -159,7 +159,7 @@ export function MainThreadPanel() {
 
         <Verdict js={jsMs} wasm={wasmMs} testId="main-verdict" />
 
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           Both run on the main thread, one after the other, each warmed up at n = {WARMUP_N} first.
           Push n past 35 and watch the frame counter above stop dead for both: faster is not the
           same as non-blocking.

@@ -3,13 +3,15 @@ import { Boxes, TriangleAlert } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
 import { stringVal } from "react-use-wasm";
 import type { MemoryProps } from "@/memory-exports";
-import { CodeBlock } from "@/components/CodeBlock";
+import { CodeTabs } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-const STRUCT_SNIPPET = `// Go:  type Point struct { X, Y float64 }  -> 16 bytes, no padding.
+const STRUCT_SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
+
+// Go:  type Point struct { X, Y float64 }  -> 16 bytes, no padding.
 // JS simply agrees on the same layout.
 const [x, y] = withScope((s) => {
   const pts = s.f64ArrayArg([0,0, 10,0, 10,10, 0,10]);
@@ -22,7 +24,9 @@ const [x, y] = withScope((s) => {
   return out.read();
 });`;
 
-const JSON_SNIPPET = `const stats = withScope((s) => {
+const JSON_SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
+
+const stats = withScope((s) => {
   const json = s.stringArg(JSON.stringify(people));
 
   // Go unmarshals, computes, marshals, and returns the result string
@@ -30,6 +34,50 @@ const JSON_SNIPPET = `const stats = withScope((s) => {
   // and stringVal turns that into null.
   return stringVal(exports, exports.jsonStats(json.ptr, json.len));
 });`;
+
+const STRUCT_BY_HAND = `const { exports } = useWasm<MemoryExports>("/memory.wasm");
+
+const points = Float64Array.from([0,0, 10,0, 10,10, 0,10]);
+
+const ptr = exports.alloc(points.byteLength);
+const out = exports.alloc(16);          // room for two float64s
+let x, y;
+try {
+  new Float64Array(exports.memory.buffer, ptr, points.length).set(points);
+
+  // points.length is 8 numbers, but centroid counts POINTS, so 4.
+  exports.centroid(ptr, points.length / 2, out);
+
+  [x, y] = new Float64Array(exports.memory.buffer.slice(out, out + 16));
+} finally {
+  exports.free(out);    // two allocations, two frees, right order
+  exports.free(ptr);
+}`;
+
+const JSON_BY_HAND = `const { exports } = useWasm<MemoryExports>("/memory.wasm");
+
+const bytes = new TextEncoder().encode(JSON.stringify(people));
+
+const ptr = exports.alloc(bytes.byteLength);
+let stats = null;
+try {
+  new Uint8Array(exports.memory.buffer).set(bytes, ptr);
+
+  const packed = exports.jsonStats(ptr, bytes.byteLength);
+  if (packed !== 0n) {                  // 0n means it would not parse
+    const outPtr = Number(packed >> 32n);
+    const outLen = Number(packed & 0xffffffffn);
+    try {
+      stats = new TextDecoder().decode(
+        new Uint8Array(exports.memory.buffer.slice(outPtr, outPtr + outLen))
+      );
+    } finally {
+      exports.free(outPtr);
+    }
+  }
+} finally {
+  exports.free(ptr);
+}`;
 
 const DEFAULT_POINTS = "0,0  10,0  10,10  0,10";
 const DEFAULT_PEOPLE = `[
@@ -122,7 +170,13 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
             </span>
           </div>
 
-          <CodeBlock code={STRUCT_SNIPPET} />
+          <CodeTabs
+            testId="struct-code-tabs"
+            variants={[
+              { label: "withScope", code: STRUCT_SNIPPET },
+              { label: "by hand", code: STRUCT_BY_HAND },
+            ]}
+          />
         </section>
 
         <Separator />
@@ -164,9 +218,15 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
             )}
           </div>
 
-          <CodeBlock code={JSON_SNIPPET} />
+          <CodeTabs
+            testId="json-code-tabs"
+            variants={[
+              { label: "withScope", code: JSON_SNIPPET },
+              { label: "by hand", code: JSON_BY_HAND },
+            ]}
+          />
 
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground text-sm">
             This single feature is why the demo module is 186 kB rather than 15 kB. For a module you
             ship, that is usually the deciding argument for the struct layout above.
           </p>

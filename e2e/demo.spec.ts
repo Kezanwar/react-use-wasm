@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 const MS = /\d+(\.\d+)?\s*ms/;
+
+/** The page lands on Getting started, so the benchmark tests open the tab. */
+async function openBenchmarks(page: import("@playwright/test").Page) {
+  await page.goto("/");
+  await page.getByTestId("tab-benchmarks").click();
+}
 /** toLocaleString inserts group separators, so match the digits loosely. */
 const digits = (n: number) => new RegExp(String(n).split("").join("[,.\\s]?"));
 
@@ -22,6 +28,10 @@ test("the two tabs load two different modules", async ({ page }) => {
   });
 
   await page.goto("/");
+  // Getting started is all prose: nothing is fetched until a tab needs it.
+  expect(fetched).toEqual([]);
+
+  await page.getByTestId("tab-benchmarks").click();
   await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
   expect(fetched).toContain("/math.wasm");
   // The benchmark must not pull in the 186 kB module: that is the whole
@@ -34,7 +44,7 @@ test("the two tabs load two different modules", async ({ page }) => {
 });
 
 test("useWasm panel benchmarks JS against wasm on the main thread", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const run = page.getByTestId("main-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
@@ -54,7 +64,7 @@ test("useWasm panel benchmarks JS against wasm on the main thread", async ({ pag
 });
 
 test("useWasmWorker benchmarks both workers without blocking the main thread", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const run = page.getByTestId("worker-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
@@ -80,7 +90,7 @@ test("useWasmWorker benchmarks both workers without blocking the main thread", a
 });
 
 test("Cancel terminates a running call and both workers come back", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const run = page.getByTestId("worker-run");
   await expect(run).toBeEnabled({ timeout: 15_000 });
@@ -108,7 +118,7 @@ test("imports reach the module on both threads", async ({ page }) => {
   const consoleLines: string[] = [];
   page.on("console", (msg) => consoleLines.push(msg.text()));
 
-  await page.goto("/");
+  await openBenchmarks(page);
 
   // Main thread: a plain function in the `imports` object.
   const mainRun = page.getByTestId("imports-main-run");
@@ -136,7 +146,7 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
   page,
 }) => {
   await page.setViewportSize({ width: 900, height: 820 });
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const inline = page.getByTestId("frames");
   const floating = page.getByTestId("frames-floating");
@@ -158,10 +168,15 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
   await expect(floating).toHaveCount(0);
 });
 
-test("tabs switch between the three pages", async ({ page }) => {
+test("tabs switch between the four pages", async ({ page }) => {
   await page.goto("/");
 
+  // Getting started is the landing tab.
+  await expect(page.getByTestId("start-code-tabs")).toBeVisible();
+
+  await page.getByTestId("tab-benchmarks").click();
   await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("start-code-tabs")).toBeHidden();
 
   await page.getByTestId("tab-examples").click();
   await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
@@ -251,7 +266,7 @@ test("the Examples worker card runs fib off the main thread", async ({ page }) =
 });
 
 test("the n input can be emptied, and Run waits until it is not", async ({ page }) => {
-  await page.goto("/");
+  await openBenchmarks(page);
 
   const n = page.getByTestId("main-n");
   const run = page.getByTestId("main-run");
@@ -278,4 +293,97 @@ test("the n input can be emptied, and Run waits until it is not", async ({ page 
   await n.fill("99");
   await n.blur();
   await expect(n).toHaveValue("42");
+});
+
+test("each memory example can be flipped between withScope and by hand", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+  await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
+
+  const block = page.getByTestId("arrays-code-tabs");
+  const scoped = block.getByRole("tab", { name: "withScope" });
+  const byHand = block.getByRole("tab", { name: "by hand" });
+
+  // withScope is what the page argues for, so it is what you land on.
+  await expect(scoped).toHaveAttribute("aria-selected", "true");
+  await expect(block).toContainText("s.i32ArrayArg");
+  await expect(block).not.toContainText("exports.free");
+
+  await byHand.click();
+  await expect(byHand).toHaveAttribute("aria-selected", "true");
+  // The whole point of the comparison: the manual version has to free.
+  await expect(block).toContainText("exports.free(ptr)");
+  await expect(block).toContainText("xs.byteLength");
+  await expect(block).not.toContainText("s.i32ArrayArg");
+
+  // All four memory examples get the pair.
+  for (const id of ["strings-code-tabs", "struct-code-tabs", "json-code-tabs"]) {
+    await expect(page.getByTestId(id).getByRole("tab", { name: "by hand" })).toBeVisible();
+  }
+});
+
+test("the Examples page leads with a module that needs no memory", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  const run = page.getByTestId("numbers-run");
+  await expect(run).toBeEnabled({ timeout: 20_000 });
+  await run.click();
+
+  // Both hooks, same numbers: that is the claim the card makes.
+  for (const hook of ["numbers-main", "numbers-worker"]) {
+    await expect(page.getByTestId(`${hook}-add`)).toHaveText("5", { timeout: 20_000 });
+    await expect(page.getByTestId(`${hook}-scale`)).toHaveText("6");
+  }
+
+  await page.getByTestId("numbers-a").fill("7");
+  await run.click();
+  for (const hook of ["numbers-main", "numbers-worker"]) {
+    await expect(page.getByTestId(`${hook}-add`)).toHaveText("10", { timeout: 20_000 });
+    await expect(page.getByTestId(`${hook}-scale`)).toHaveText("21");
+  }
+
+  // The code block shows the same thing written for either hook.
+  const tabs = page.getByTestId("numbers-code-tabs");
+  await expect(tabs).toContainText("useWasm<MathExports>");
+  await tabs.getByRole("tab", { name: "useWasmWorker" }).click();
+  await expect(tabs).toContainText('await call("add", a, b)');
+
+  // It comes before the memory examples, which is the whole point.
+  const order = await page.evaluate(() => {
+    const numbers = document.querySelector('[data-testid="numbers-run"]')!;
+    const arrays = document.querySelector('[data-testid="arrays-run"]')!;
+    // Node.DOCUMENT_POSITION_FOLLOWING
+    return (numbers.compareDocumentPosition(arrays) & 4) !== 0;
+  });
+  expect(order).toBe(true);
+});
+
+test("Getting started walks from install to a running call", async ({ page }) => {
+  await page.goto("/");
+
+  // Five numbered steps, in order.
+  await expect(page.getByText("Install", { exact: true })).toBeVisible();
+  for (const title of [
+    "Write the module",
+    "Build and serve it",
+    "Describe the exports",
+    "Call it",
+  ]) {
+    await expect(page.getByText(title, { exact: true })).toBeVisible();
+  }
+
+  // The build command has to be the one that actually works: standard Go
+  // produces a module these hooks cannot use.
+  await expect(page.getByText("tinygo build -target=wasm-unknown")).toBeVisible();
+
+  // The last step offers both hooks, same as the Numbers example.
+  const tabs = page.getByTestId("start-code-tabs");
+  await expect(tabs).toContainText("useWasm<MathExports>");
+  await tabs.getByRole("tab", { name: "useWasmWorker" }).click();
+  await expect(tabs).toContainText('await call("fib", 40)');
+
+  // Install moved here, so the API tab should no longer carry it.
+  await page.getByTestId("tab-api").click();
+  await expect(page.getByText("npm install react-use-wasm")).toHaveCount(0);
 });
