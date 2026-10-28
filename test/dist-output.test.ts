@@ -58,6 +58,8 @@ describe.skipIf(!built)("dist", () => {
     expect(pkg.dependencies).toBeUndefined();
     expect(pkg.peerDependencies).toEqual({ react: ">=18" });
     expect(pkg.sideEffects).toBe(false);
-    expect(pkg.files).toEqual(["dist"]);
+    // llm.md ships alongside dist: a brief about the package, written for
+    // a model. README and LICENSE are included by npm regardless.
+    expect(pkg.files).toEqual(["dist", "llm.md"]);
   });
 });
