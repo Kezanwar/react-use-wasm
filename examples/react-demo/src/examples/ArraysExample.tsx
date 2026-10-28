@@ -20,7 +20,9 @@ const { total, sorted } = withScope((s) => {
   return { total, sorted: [...xs.read()] };        // read() copies out
 });`;
 
-const BY_HAND = `const xs = Int32Array.from([5, 3, 9, 1, 7]);
+const BY_HAND = `const { exports } = useWasm<MemoryExports>("/memory.wasm");
+
+const xs = Int32Array.from([5, 3, 9, 1, 7]);
 
 // alloc takes BYTES. The wasm functions take an ELEMENT COUNT.
 // Those are 4x apart and nothing checks which one you passed.

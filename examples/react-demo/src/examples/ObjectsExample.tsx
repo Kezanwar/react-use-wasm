@@ -9,7 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-const STRUCT_SNIPPET = `// Go:  type Point struct { X, Y float64 }  -> 16 bytes, no padding.
+const STRUCT_SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
+
+// Go:  type Point struct { X, Y float64 }  -> 16 bytes, no padding.
 // JS simply agrees on the same layout.
 const [x, y] = withScope((s) => {
   const pts = s.f64ArrayArg([0,0, 10,0, 10,10, 0,10]);
@@ -22,7 +24,9 @@ const [x, y] = withScope((s) => {
   return out.read();
 });`;
 
-const JSON_SNIPPET = `const stats = withScope((s) => {
+const JSON_SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
+
+const stats = withScope((s) => {
   const json = s.stringArg(JSON.stringify(people));
 
   // Go unmarshals, computes, marshals, and returns the result string
@@ -31,7 +35,9 @@ const JSON_SNIPPET = `const stats = withScope((s) => {
   return stringVal(exports, exports.jsonStats(json.ptr, json.len));
 });`;
 
-const STRUCT_BY_HAND = `const points = Float64Array.from([0,0, 10,0, 10,10, 0,10]);
+const STRUCT_BY_HAND = `const { exports } = useWasm<MemoryExports>("/memory.wasm");
+
+const points = Float64Array.from([0,0, 10,0, 10,10, 0,10]);
 
 const ptr = exports.alloc(points.byteLength);
 const out = exports.alloc(16);          // room for two float64s
@@ -48,7 +54,9 @@ try {
   exports.free(ptr);
 }`;
 
-const JSON_BY_HAND = `const bytes = new TextEncoder().encode(JSON.stringify(people));
+const JSON_BY_HAND = `const { exports } = useWasm<MemoryExports>("/memory.wasm");
+
+const bytes = new TextEncoder().encode(JSON.stringify(people));
 
 const ptr = exports.alloc(bytes.byteLength);
 let stats = null;

@@ -9,7 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-const SNIPPET = `const reversed = withScope((s) => {
+const SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
+
+const reversed = withScope((s) => {
   // stringArg encodes to UTF-8 and sizes the block in BYTES, which is
   // not "hello wasm".length the moment you type a non-ASCII character.
   const text = s.stringArg("hello wasm");
@@ -22,7 +24,9 @@ const SNIPPET = `const reversed = withScope((s) => {
   return stringVal(exports, exports.reverseString(text.ptr, text.len));
 });`;
 
-const BY_HAND = `// .length is characters. The allocation needs BYTES, and the two
+const BY_HAND = `const { exports } = useWasm<MemoryExports>("/memory.wasm");
+
+// .length is characters. The allocation needs BYTES, and the two
 // differ the moment anyone types a non-ASCII character.
 const bytes = new TextEncoder().encode("hello wasm");
 
