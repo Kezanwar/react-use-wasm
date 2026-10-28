@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  withScope as runScope,
+  type AllocatorNames,
+  type WasmAllocator,
+  type WasmScope,
+} from "./memory";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -40,7 +46,21 @@ export interface UseWasmOptions {
   cache?: boolean;
   /** Extra fetch options (headers, credentials, …). */
   fetchInit?: RequestInit;
+  /**
+   * Export names of the module's allocator, for `withScope`. Defaults to
+   * `alloc` / `free` / `memory`; Emscripten modules want `alloc: "malloc"`.
+   */
+  allocator?: AllocatorNames;
 }
+
+/**
+ * `withScope` only exists for modules that declare an allocator. When the
+ * exports type doesn't extend {@link WasmAllocator}, calling it is a type
+ * error whose message is the string below.
+ */
+export type ScopeRunner<T> = T extends WasmAllocator
+  ? <R>(body: (s: WasmScope) => R) => R
+  : (error: "withScope needs an exports type declaring memory, alloc and free") => never;
 
 export interface UseWasmHelpers<T> {
   /**
@@ -54,6 +74,13 @@ export interface UseWasmHelpers<T> {
     name: K,
     ...args: Parameters<Fn<T, K>>
   ) => ReturnType<Fn<T, K>>;
+  /**
+   * Run a body with a memory scope, freeing everything it allocated on the
+   * way out. Throws if the module isn't ready or exports no allocator.
+   *
+   * The body must be synchronous; see `withScope` in ./memory.
+   */
+  withScope: ScopeRunner<T>;
   /** Re-fetch, recompile and re-instantiate the module. */
   reload: () => void;
 }
@@ -213,10 +240,20 @@ export function useWasm<T extends object = WebAssembly.Exports>(
     [exports]
   );
 
+  const withScope = useCallback(
+    <R,>(body: (s: WasmScope) => R): R => {
+      if (!exports) {
+        throw new Error("useWasm: withScope called before the module was ready");
+      }
+      return runScope(exports as unknown as WasmAllocator, body, optionsRef.current.allocator);
+    },
+    [exports]
+  );
+
   const reload = useCallback(() => {
     if (url) moduleCache.delete(url);
     setReloadKey((k) => k + 1);
   }, [url]);
 
-  return { ...state, call, reload } as UseWasmResult<T>;
+  return { ...state, call, withScope, reload } as unknown as UseWasmResult<T>;
 }
