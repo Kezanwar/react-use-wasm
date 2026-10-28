@@ -175,6 +175,63 @@ export function ApiPage() {
               without breaking the rules of hooks.
             </p>
           </Entry>
+
+          <Separator />
+
+          {/* ---------------------------------------------------------- */}
+          {/* The memory layer only applies to this hook, so it lives in  */}
+          {/* this card rather than one of its own.                       */}
+          <div className="space-y-1.5">
+            <h3 className="text-foreground flex items-center gap-2 font-semibold">
+              <MemoryStick className="text-primary size-4" />
+              Memory
+            </h3>
+            <p className="text-muted-foreground text-sm">
+              For passing anything bigger than a number. Opt-in: a module with no allocator is
+              unaffected, and every one of these is tree-shaken away if you never import it.
+            </p>
+          </div>
+
+          <Entry name="WasmAllocator" signature={ALLOCATOR}>
+            <p>
+              The contract. Nothing is required of a module to use the hooks, only to use the memory
+              layer. If your toolchain names them differently, pass{" "}
+              <code>{`{ allocator: { alloc: "malloc" } }`}</code> rather than renaming your exports.
+            </p>
+          </Entry>
+
+          <Separator />
+
+          <Entry name="withScope" signature={SCOPE}>
+            <p>
+              Everything the scope hands out is freed when the body returns, including when it
+              throws. The helpers size the allocation themselves, which is the part that bites:{" "}
+              <code>alloc</code> wants bytes, wasm functions want element counts, and{" "}
+              <code>"héllo"</code> is five characters but six bytes.
+            </p>
+            <p>
+              <strong className="text-foreground">The body must be synchronous.</strong> An async
+              one would free its memory before the work ran, so that throws instead.
+            </p>
+          </Entry>
+
+          <Entry name="WasmBlock" signature={BLOCK}>
+            <p>
+              What a scope helper returns. <code>read()</code> copies rather than handing back a
+              view, so the value survives both the free and any <code>memory.grow()</code> along the
+              way.
+            </p>
+          </Entry>
+
+          <Separator />
+
+          <Entry name="stringVal / bytesVal / unpack" signature={PACKED}>
+            <p>
+              <code>0n</code> is the conventional failure signal and comes back as <code>null</code>
+              . Only use these on data the module freshly allocated: they free the pointer, so a
+              pointer into static data would be freed wrongly.
+            </p>
+          </Entry>
         </CardContent>
       </Card>
 
@@ -227,63 +284,6 @@ export function ApiPage() {
               By default the worker is an inline <code>blob:</code> URL, so no bundler config is
               needed. Under a CSP that blocks blob workers, write <code>WASM_WORKER_SOURCE</code>{" "}
               out as a file, serve it, and point this at it.
-            </p>
-          </Entry>
-        </CardContent>
-      </Card>
-
-      {/* ------------------------------------------------------------ */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MemoryStick className="text-primary size-4" />
-            Memory
-            <Badge variant="secondary">useWasm only</Badge>
-          </CardTitle>
-          <CardDescription>
-            For passing anything bigger than a number. Opt-in: a module with no allocator is
-            unaffected and every one of these is tree-shaken away if you never import it.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <Entry name="WasmAllocator" signature={ALLOCATOR}>
-            <p>
-              The contract. Nothing is required of a module to use the hooks, only to use the memory
-              layer. If your toolchain names them differently, pass{" "}
-              <code>{`{ allocator: { alloc: "malloc" } }`}</code> rather than renaming your exports.
-            </p>
-          </Entry>
-
-          <Separator />
-
-          <Entry name="withScope" signature={SCOPE}>
-            <p>
-              Everything the scope hands out is freed when the body returns, including when it
-              throws. The helpers size the allocation themselves, which is the part that bites:{" "}
-              <code>alloc</code> wants bytes, wasm functions want element counts, and{" "}
-              <code>"héllo"</code> is five characters but six bytes.
-            </p>
-            <p>
-              <strong className="text-foreground">The body must be synchronous.</strong> An async
-              one would free its memory before the work ran, so that throws instead.
-            </p>
-          </Entry>
-
-          <Entry name="WasmBlock" signature={BLOCK}>
-            <p>
-              What a scope helper returns. <code>read()</code> copies rather than handing back a
-              view, so the value survives both the free and any <code>memory.grow()</code> along the
-              way.
-            </p>
-          </Entry>
-
-          <Separator />
-
-          <Entry name="stringVal / bytesVal / unpack" signature={PACKED}>
-            <p>
-              <code>0n</code> is the conventional failure signal and comes back as <code>null</code>
-              . Only use these on data the module freshly allocated: they free the pointer, so a
-              pointer into static data would be freed wrongly.
             </p>
           </Entry>
         </CardContent>
