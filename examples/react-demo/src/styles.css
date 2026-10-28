@@ -177,6 +177,20 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Prose                                                                */
+/*                                                                      */
+/* Unlayered on purpose. Tailwind's text-sm and friends set a           */
+/* line-height as well as a font-size, and anything inside @layer base  */
+/* loses to a utility whatever its specificity. To override this on one */
+/* element, use the important form: leading-normal!                     */
+/* ------------------------------------------------------------------ */
+
+p,
+[data-slot="card-description"] {
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------------------ */
 /* Syntax highlighting                                                  */
 /*                                                                      */
 /* prism-react-renderer is given an empty theme so it emits token       */
