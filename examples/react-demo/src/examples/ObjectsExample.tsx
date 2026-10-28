@@ -164,8 +164,8 @@ export function ObjectsExample({ e, withScope }: MemoryProps) {
           <CodeBlock code={JSON_SNIPPET} />
 
           <p className="text-muted-foreground text-xs">
-            This single feature is why the demo module is 186 kB rather than 15 kB. For a module
-            you ship, that is usually the deciding argument for the struct layout above.
+            This single feature is why the demo module is 186 kB rather than 15 kB. For a module you
+            ship, that is usually the deciding argument for the struct layout above.
           </p>
         </section>
       </CardContent>

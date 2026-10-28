@@ -33,9 +33,7 @@ for (const i of imports) console.log(`  ${i.module}.${i.name}  [${i.kind}]`);
 console.log("\nexports:");
 for (const e of exports) console.log(`  ${e.name}  [${e.kind}]`);
 
-const unexpected = imports
-  .map((i) => `${i.module}.${i.name}`)
-  .filter((n) => !allowed.has(n));
+const unexpected = imports.map((i) => `${i.module}.${i.name}`).filter((n) => !allowed.has(n));
 
 if (unexpected.length) {
   console.error(`\nunexpected imports: ${unexpected.join(", ")}`);

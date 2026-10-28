@@ -55,9 +55,9 @@ export function StringsExample({ e, withScope }: MemoryProps) {
           Strings
         </CardTitle>
         <CardDescription>
-          A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back,
-          so Go packs the offset and length into a single <code>i64</code> — which is exactly why
-          it arrives in <Js /> as a <code>bigint</code>.
+          A string is UTF-8 bytes in memory. Returning a <em>new</em> one needs two values back, so
+          Go packs the offset and length into a single <code>i64</code> — which is exactly why it
+          arrives in <Js /> as a <code>bigint</code>.
         </CardDescription>
       </CardHeader>
 
@@ -102,9 +102,8 @@ export function StringsExample({ e, withScope }: MemoryProps) {
         </dl>
 
         <p className="text-muted-foreground text-xs">
-          The two calls share one buffer, so the reverse runs on the bytes{" "}
-          <code>upperInPlace</code> already uppercased. That is in-place
-          mutation doing exactly what it says.
+          The two calls share one buffer, so the reverse runs on the bytes <code>upperInPlace</code>{" "}
+          already uppercased. That is in-place mutation doing exactly what it says.
         </p>
 
         <CodeBlock code={SNIPPET} />

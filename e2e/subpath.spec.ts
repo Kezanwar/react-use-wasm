@@ -40,7 +40,10 @@ for (const [label, base] of [
     await page.getByTestId("worker-n").fill("30");
     await expect(page.getByTestId("worker-run")).toBeEnabled({ timeout: 20_000 });
     await page.getByTestId("worker-run").click();
-    await expect(page.getByTestId("worker-wasm-value")).toHaveText(/8[,.\s]?3[,.\s]?2[,.\s]?0[,.\s]?4[,.\s]?0/, { timeout: 30_000 });
+    await expect(page.getByTestId("worker-wasm-value")).toHaveText(
+      /8[,.\s]?3[,.\s]?2[,.\s]?0[,.\s]?4[,.\s]?0/,
+      { timeout: 30_000 }
+    );
 
     await page.getByTestId("imports-worker-run").click();
     await expect(page.getByTestId("imports-worker-result")).toContainText("3");

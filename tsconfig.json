@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
@@ -18,22 +14,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noEmit": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "react-use-wasm": [
-        "./src/index.ts"
-      ]
+      "react-use-wasm": ["./src/index.ts"]
     }
   },
-  "include": [
-    "src",
-    "test",
-    "e2e",
-    "tsup.config.ts",
-    "vitest.config.ts",
-    "playwright.config.ts"
-  ]
+  "include": ["src", "test", "e2e", "tsup.config.ts", "vitest.config.ts", "playwright.config.ts"]
 }

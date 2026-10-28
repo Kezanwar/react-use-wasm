@@ -29,9 +29,7 @@ export function Heartbeat() {
   useEffect(() => {
     const el = inline.current;
     if (!el) return;
-    const observer = new IntersectionObserver(([entry]) =>
-      setOffScreen(!entry?.isIntersecting)
-    );
+    const observer = new IntersectionObserver(([entry]) => setOffScreen(!entry?.isIntersecting));
     observer.observe(el);
     return () => observer.disconnect();
   }, []);

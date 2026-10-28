@@ -117,8 +117,7 @@ export function ApiPage() {
           </CardTitle>
           <CardDescription>
             React 18 or 19 as a peer dependency, and no others. ESM and CJS, with a{" "}
-            <code>"use client"</code> banner so it drops into a Next.js app router without
-            ceremony.
+            <code>"use client"</code> banner so it drops into a Next.js app router without ceremony.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,8 +171,8 @@ export function ApiPage() {
 
           <Entry name="url" signature={`useWasm<T>(url: string | null, options?)`}>
             <p>
-              Pass <code>null</code> to skip loading entirely, which is how you make it
-              conditional without breaking the rules of hooks.
+              Pass <code>null</code> to skip loading entirely, which is how you make it conditional
+              without breaking the rules of hooks.
             </p>
           </Entry>
         </CardContent>
@@ -195,19 +194,23 @@ export function ApiPage() {
         <CardContent className="space-y-5">
           <CodeBlock code={WORKER} label="TypeScript" language="tsx" />
 
-          <Entry name="call" badge="numbers and bigints only" signature={`call(name, ...args): Promise<R>`}>
+          <Entry
+            name="call"
+            badge="numbers and bigints only"
+            signature={`call(name, ...args): Promise<R>`}
+          >
             <p>
-              Arguments and results cross by structured clone. There is no <code>exports</code>{" "}
-              and no <code>withScope</code> on this hook: a{" "}
-              <code>WebAssembly.Memory</code> is not cloneable, so the module's memory stays in
-              the worker. See the worker card on the Examples tab.
+              Arguments and results cross by structured clone. There is no <code>exports</code> and
+              no <code>withScope</code> on this hook: a <code>WebAssembly.Memory</code> is not
+              cloneable, so the module's memory stays in the worker. See the worker card on the
+              Examples tab.
             </p>
           </Entry>
 
           <Entry name="terminate" signature={`terminate(): void`}>
             <p>
-              Kills the worker immediately and rejects every pending call. The only way to cancel
-              a runaway computation, since <Wasm>wasm</Wasm> has no interrupt.
+              Kills the worker immediately and rejects every pending call. The only way to cancel a
+              runaway computation, since <Wasm>wasm</Wasm> has no interrupt.
             </p>
           </Entry>
 
@@ -222,8 +225,8 @@ export function ApiPage() {
           <Entry name="workerUrl" signature={`workerUrl?: string`}>
             <p>
               By default the worker is an inline <code>blob:</code> URL, so no bundler config is
-              needed. Under a CSP that blocks blob workers, write{" "}
-              <code>WASM_WORKER_SOURCE</code> out as a file, serve it, and point this at it.
+              needed. Under a CSP that blocks blob workers, write <code>WASM_WORKER_SOURCE</code>{" "}
+              out as a file, serve it, and point this at it.
             </p>
           </Entry>
         </CardContent>
@@ -245,10 +248,9 @@ export function ApiPage() {
         <CardContent className="space-y-5">
           <Entry name="WasmAllocator" signature={ALLOCATOR}>
             <p>
-              The contract. Nothing is required of a module to use the hooks, only to use the
-              memory layer. If your toolchain names them differently, pass{" "}
-              <code>{`{ allocator: { alloc: "malloc" } }`}</code> rather than renaming your
-              exports.
+              The contract. Nothing is required of a module to use the hooks, only to use the memory
+              layer. If your toolchain names them differently, pass{" "}
+              <code>{`{ allocator: { alloc: "malloc" } }`}</code> rather than renaming your exports.
             </p>
           </Entry>
 
@@ -270,8 +272,8 @@ export function ApiPage() {
           <Entry name="WasmBlock" signature={BLOCK}>
             <p>
               What a scope helper returns. <code>read()</code> copies rather than handing back a
-              view, so the value survives both the free and any{" "}
-              <code>memory.grow()</code> along the way.
+              view, so the value survives both the free and any <code>memory.grow()</code> along the
+              way.
             </p>
           </Entry>
 
@@ -279,9 +281,9 @@ export function ApiPage() {
 
           <Entry name="stringVal / bytesVal / unpack" signature={PACKED}>
             <p>
-              <code>0n</code> is the conventional failure signal and comes back as{" "}
-              <code>null</code>. Only use these on data the module freshly allocated: they free
-              the pointer, so a pointer into static data would be freed wrongly.
+              <code>0n</code> is the conventional failure signal and comes back as <code>null</code>
+              . Only use these on data the module freshly allocated: they free the pointer, so a
+              pointer into static data would be freed wrongly.
             </p>
           </Entry>
         </CardContent>
@@ -312,15 +314,15 @@ export function ApiPage() {
 
           <Entry name="resolveAllocator" signature={`resolveAllocator(exports, names?): Allocator`}>
             <p>
-              The lookup <code>withScope</code> does internally, exported for use outside React —
-              in a worker, in tests, in plain <Js />.
+              The lookup <code>withScope</code> does internally, exported for use outside React — in
+              a worker, in tests, in plain <Js />.
             </p>
           </Entry>
 
           <Entry name="WASM_WORKER_SOURCE" signature={`const WASM_WORKER_SOURCE: string`}>
             <p>
-              The worker script as a string. Write it to a file for the{" "}
-              <code>workerUrl</code> escape hatch, or fork it to add your own message types.
+              The worker script as a string. Write it to a file for the <code>workerUrl</code>{" "}
+              escape hatch, or fork it to add your own message types.
             </p>
           </Entry>
         </CardContent>

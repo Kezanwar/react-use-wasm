@@ -241,7 +241,7 @@ export function useWasm<T extends object = WebAssembly.Exports>(
   );
 
   const withScope = useCallback(
-    <R,>(body: (s: WasmScope) => R): R => {
+    <R>(body: (s: WasmScope) => R): R => {
       if (!exports) {
         throw new Error("useWasm: withScope called before the module was ready");
       }

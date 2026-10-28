@@ -11,7 +11,9 @@ export function useJsWorker(url: string) {
   const [isReady, setIsReady] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const workerRef = useRef<Worker | null>(null);
-  const pendingRef = useRef(new Map<number, { resolve: (v: number) => void; reject: (e: Error) => void }>());
+  const pendingRef = useRef(
+    new Map<number, { resolve: (v: number) => void; reject: (e: Error) => void }>()
+  );
   const nextIdRef = useRef(0);
 
   const rejectAll = useCallback((reason: Error) => {

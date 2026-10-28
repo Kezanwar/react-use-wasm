@@ -6,13 +6,7 @@ import type { MathExports } from "@/math-exports";
 import { useJsWorker } from "@/useJsWorker";
 import { BenchCard, Verdict } from "@/components/BenchCard";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { asset } from "@/lib/asset";
@@ -93,9 +87,9 @@ export function WorkerPanel() {
         <Badge variant="secondary">Web Worker</Badge>
       </CardTitle>
       <CardDescription>
-        <code>call</code> returns a Promise and the work happens off the main
-        thread, so the page stays interactive throughout. <Js /> runs in a plain
-        module worker, <Wasm>wasm</Wasm> in <code>useWasmWorker</code>.
+        <code>call</code> returns a Promise and the work happens off the main thread, so the page
+        stays interactive throughout. <Js /> runs in a plain module worker, <Wasm>wasm</Wasm> in{" "}
+        <code>useWasmWorker</code>.
       </CardDescription>
     </CardHeader>
   );
@@ -135,28 +129,16 @@ export function WorkerPanel() {
               className="tabular w-24"
             />
           </label>
-          <Button
-            onClick={run}
-            disabled={!ready || busy}
-            data-testid="worker-run"
-          >
-            <Play className="size-4" />{" "}
-            {ready ? "Run both" : "Loading workers…"}
+          <Button onClick={run} disabled={!ready || busy} data-testid="worker-run">
+            <Play className="size-4" /> {ready ? "Run both" : "Loading workers…"}
           </Button>
           {busy && (
-            <Button
-              variant="destructive"
-              onClick={cancel}
-              data-testid="worker-cancel"
-            >
+            <Button variant="destructive" onClick={cancel} data-testid="worker-cancel">
               <X className="size-4" /> Cancel
             </Button>
           )}
           {busy && (
-            <span
-              className="text-muted-foreground text-sm"
-              data-testid="worker-busy"
-            >
+            <span className="text-muted-foreground text-sm" data-testid="worker-busy">
               Computing… (the page stays responsive)
             </span>
           )}
@@ -194,9 +176,8 @@ export function WorkerPanel() {
         )}
 
         <p className="text-muted-foreground text-xs">
-          Timings are wall clock from the main thread, so they include the
-          postMessage round trip (well under a millisecond at these sizes). Try
-          n = 42, then hit Cancel halfway.
+          Timings are wall clock from the main thread, so they include the postMessage round trip
+          (well under a millisecond at these sizes). Try n = 42, then hit Cancel halfway.
         </p>
       </CardContent>
     </Card>

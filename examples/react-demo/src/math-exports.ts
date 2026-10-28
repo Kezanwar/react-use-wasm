@@ -29,13 +29,7 @@ export interface MathExports {
 }
 
 /** Runtime mirror of the callable exports, used by the test to check each one. */
-export const MATH_FUNCTION_NAMES = [
-  "add",
-  "fib",
-  "countPrimes",
-  "scale",
-  "logSum",
-] as const;
+export const MATH_FUNCTION_NAMES = ["add", "fib", "countPrimes", "scale", "logSum"] as const;
 
 /**
  * Compile-time proof that the list covers exactly the callable exports, so

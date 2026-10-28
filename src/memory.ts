@@ -157,7 +157,8 @@ export interface WasmScope {
   f64ArrayOut(len: number): WasmBlock<Float64Array>;
 }
 
-const RELEASED = "useWasm: this scope has already exited. Read everything you need inside the withScope body.";
+const RELEASED =
+  "useWasm: this scope has already exited. Read everything you need inside the withScope body.";
 
 function isThenable(value: unknown): boolean {
   return (
@@ -216,8 +217,11 @@ export function withScope<R>(
   const scope: WasmScope = {
     alloc(byteLength) {
       const ptr = reserve(byteLength);
-      return block(ptr, byteLength, byteLength, () =>
-        new Uint8Array(memory.buffer.slice(ptr, ptr + byteLength))
+      return block(
+        ptr,
+        byteLength,
+        byteLength,
+        () => new Uint8Array(memory.buffer.slice(ptr, ptr + byteLength))
       );
     },
 
@@ -235,8 +239,11 @@ export function withScope<R>(
     bytesArg(data) {
       const ptr = reserve(data.byteLength);
       u8().set(data, ptr);
-      return block(ptr, data.byteLength, data.byteLength, () =>
-        new Uint8Array(memory.buffer.slice(ptr, ptr + data.byteLength))
+      return block(
+        ptr,
+        data.byteLength,
+        data.byteLength,
+        () => new Uint8Array(memory.buffer.slice(ptr, ptr + data.byteLength))
       );
     },
 
@@ -244,8 +251,11 @@ export function withScope<R>(
       const src = xs instanceof Int32Array ? xs : Int32Array.from(xs);
       const ptr = reserve(src.byteLength);
       new Int32Array(memory.buffer, ptr, src.length).set(src);
-      return block(ptr, src.length, src.byteLength, () =>
-        new Int32Array(memory.buffer.slice(ptr, ptr + src.byteLength))
+      return block(
+        ptr,
+        src.length,
+        src.byteLength,
+        () => new Int32Array(memory.buffer.slice(ptr, ptr + src.byteLength))
       );
     },
 
@@ -253,8 +263,11 @@ export function withScope<R>(
       const src = xs instanceof Float64Array ? xs : Float64Array.from(xs);
       const ptr = reserve(src.byteLength);
       new Float64Array(memory.buffer, ptr, src.length).set(src);
-      return block(ptr, src.length, src.byteLength, () =>
-        new Float64Array(memory.buffer.slice(ptr, ptr + src.byteLength))
+      return block(
+        ptr,
+        src.length,
+        src.byteLength,
+        () => new Float64Array(memory.buffer.slice(ptr, ptr + src.byteLength))
       );
     },
 
@@ -265,16 +278,22 @@ export function withScope<R>(
     i32ArrayOut(len) {
       const byteLength = len * 4;
       const ptr = reserve(byteLength);
-      return block(ptr, len, byteLength, () =>
-        new Int32Array(memory.buffer.slice(ptr, ptr + byteLength))
+      return block(
+        ptr,
+        len,
+        byteLength,
+        () => new Int32Array(memory.buffer.slice(ptr, ptr + byteLength))
       );
     },
 
     f64ArrayOut(len) {
       const byteLength = len * 8;
       const ptr = reserve(byteLength);
-      return block(ptr, len, byteLength, () =>
-        new Float64Array(memory.buffer.slice(ptr, ptr + byteLength))
+      return block(
+        ptr,
+        len,
+        byteLength,
+        () => new Float64Array(memory.buffer.slice(ptr, ptr + byteLength))
       );
     },
   };

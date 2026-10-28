@@ -16,12 +16,5 @@ export type {
   UseWasmWorkerHelpers,
 } from "./use-wasm-worker";
 
-export {
-  withScope,
-  resolveAllocator,
-  unpack,
-  bytesVal,
-  stringVal,
-  memorySize,
-} from "./memory";
+export { withScope, resolveAllocator, unpack, bytesVal, stringVal, memorySize } from "./memory";
 export type { WasmAllocator, AllocatorNames, WasmScope, WasmBlock } from "./memory";

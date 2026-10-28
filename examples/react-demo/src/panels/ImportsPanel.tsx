@@ -69,7 +69,10 @@ export function ImportsPanel() {
           >
             worker: logSum(1, 2)
           </Button>
-          <span className="text-muted-foreground tabular text-sm" data-testid="imports-worker-result">
+          <span
+            className="text-muted-foreground tabular text-sm"
+            data-testid="imports-worker-result"
+          >
             returned: {workerResult ?? "—"}
           </span>
           <span className="text-muted-foreground text-xs">

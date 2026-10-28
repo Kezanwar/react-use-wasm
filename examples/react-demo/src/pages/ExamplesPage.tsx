@@ -51,13 +51,13 @@ export function ExamplesPage() {
     <div className="space-y-6">
       <div className="space-y-3">
         <p className="text-muted-foreground text-sm">
-          A <Wasm>wasm</Wasm> function can only take and return numbers. Anything bigger travels
-          as an <strong className="text-foreground">offset</strong> into one flat{" "}
+          A <Wasm>wasm</Wasm> function can only take and return numbers. Anything bigger travels as
+          an <strong className="text-foreground">offset</strong> into one flat{" "}
           <code>ArrayBuffer</code> that both <Js /> and <Wasm>wasm</Wasm> can read and write:{" "}
-          <code>exports.memory.buffer</code>. Every example below is the same four steps —
-          allocate, write, call with <code>(offset, length)</code>, read back, free. The
-          package's <code>withScope</code> owns all four so you never pair an{" "}
-          <code>alloc</code> with a <code>free</code> by hand.
+          <code>exports.memory.buffer</code>. Every example below is the same four steps — allocate,
+          write, call with <code>(offset, length)</code>, read back, free. The package's{" "}
+          <code>withScope</code> owns all four so you never pair an <code>alloc</code> with a{" "}
+          <code>free</code> by hand.
         </p>
 
         <div className="border-border bg-card text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
@@ -75,10 +75,10 @@ export function ExamplesPage() {
       <WorkerLimitsExample />
 
       <p className="text-muted-foreground text-xs">
-        One rule catches everyone: never cache a typed-array view.{" "}
-        <code>memory.grow()</code> detaches the old <code>ArrayBuffer</code> and every view onto
-        it becomes zero-length. Every helper takes a fresh view at the moment it is used, and{" "}
-        <code>read()</code> always copies out, for exactly this reason.
+        One rule catches everyone: never cache a typed-array view. <code>memory.grow()</code>{" "}
+        detaches the old <code>ArrayBuffer</code> and every view onto it becomes zero-length. Every
+        helper takes a fresh view at the moment it is used, and <code>read()</code> always copies
+        out, for exactly this reason.
       </p>
     </div>
   );
