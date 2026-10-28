@@ -332,7 +332,7 @@ test("the Examples page leads with a module that needs no memory", async ({ page
   const tabs = page.getByTestId("numbers-code-tabs");
   await expect(tabs).toContainText("useWasm<MathExports>");
   await tabs.getByRole("tab", { name: "useWasmWorker" }).click();
-  await expect(tabs).toContainText("await call(\"add\", a, b)");
+  await expect(tabs).toContainText('await call("add", a, b)');
 
   // It comes before the memory examples, which is the whole point.
   const order = await page.evaluate(() => {

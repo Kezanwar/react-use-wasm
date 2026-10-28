@@ -97,12 +97,12 @@ function MemorySection() {
     <div className="space-y-6">
       {intro}
 
-      <div className="border-border bg-card text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
-        <MemoryStick className="size-3.5" />
-        <span className="tabular" data-testid="memory-size">
+      <div className="border-border bg-card inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
+        <MemoryStick className="text-primary size-3.5" />
+        <span className="tabular text-foreground" data-testid="memory-size">
           linear memory: {(memorySize(e) / 1024).toLocaleString()} KiB
         </span>
-        <span className="opacity-60">(refreshes when you run something)</span>
+        <span className="text-muted-foreground">(refreshes when you run something)</span>
       </div>
 
       <ArraysExample e={e} withScope={wasm.withScope} />
