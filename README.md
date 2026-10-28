@@ -161,28 +161,55 @@ if (status !== "ready") return null;    // works
 
 ## Passing more than numbers
 
-A wasm function can only take and return numbers — `i32`, `i64`, `f32`, `f64`. There is no string type, no array, no struct. Anything bigger travels as an **offset** into the module's linear memory, one flat `ArrayBuffer` that both sides read and write:
+A wasm function can only take and return numbers — `i32`, `i64`, `f32`, `f64`. There is no string type, no array, no struct. Anything bigger travels as an **offset** into the module's linear memory, one flat `ArrayBuffer` that both sides read and write.
+
+Allocate, write, call with `(offset, length)`, read back, free. `withScope` owns all five steps:
 
 ```ts
-const { isReady, exports } = useWasm<MathExports>("/math.wasm");
+const { isReady, exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
 if (!isReady) return null;
 
-// 1. reserve space        2. write into it
-const ptr = exports.alloc(xs.byteLength);
-new Int32Array(exports.memory.buffer, ptr, xs.length).set(xs);
+const { total, sorted } = withScope((s) => {
+  const xs = s.i32ArrayArg([5, 3, 9, 1, 7]);      // alloc + write
 
-// 3. call with (offset, length)
-const total = exports.sumInt32(ptr, xs.length);
-exports.sortInt32(ptr, xs.length);              // mutates in place
+  const total = exports.sumInt32(xs.ptr, xs.len); // read-only
+  exports.sortInt32(xs.ptr, xs.len);              // mutates in place
 
-// 4. read back, then free
-const sorted = new Int32Array(exports.memory.buffer, ptr, xs.length);
-exports.free(ptr);
+  return { total, sorted: [...xs.read()] };       // read() copies out
+});                                               // freed here, even on a throw
 ```
 
-Allocate, write, call with `(offset, length)`, read back, free. Every shape follows that pattern. The Examples tab of the demo runs all of them live with the source beside each one.
+The helpers size the allocation themselves, which is the part that bites by hand: `alloc` wants **bytes**, wasm functions want **element counts**, and `"héllo"` is five characters but six bytes.
 
-**Your module has to export an allocator.** `alloc` and `free` above are ordinary exports you write yourself; wasm does not provide them. [`examples/go/memory/memory.go`](examples/go/memory/memory.go) has a demo-grade pair.
+**The body must be synchronous.** An async one would return a pending promise, the scope would free immediately, and the real work would then run against released memory — so that throws rather than silently misbehaving.
+
+**Your module has to export an allocator.** `alloc` and `free` are ordinary exports you write yourself; wasm does not provide them. [`examples/go/memory/memory.go`](examples/go/memory/memory.go) has a demo-grade pair. Declare the contract on your exports type and `withScope` becomes callable:
+
+```ts
+import type { WasmAllocator } from "react-use-wasm";
+
+interface MemoryExports extends WasmAllocator {
+  sumInt32(ptr: number, len: number): number;
+  sortInt32(ptr: number, len: number): void;
+}
+```
+
+Nothing is required of a module to use the hooks, only to use the memory layer: a module with no allocator keeps working exactly as before. If your toolchain names them differently — Emscripten ships `malloc` — pass `{ allocator: { alloc: "malloc", free: "free" } }` rather than renaming your exports.
+
+### What a scope gives you
+
+| helper | returns | notes |
+| --- | --- | --- |
+| `s.stringArg(text)` | `WasmBlock<string>` | UTF-8 encodes; `len` is **bytes** |
+| `s.bytesArg(u8)` | `WasmBlock<Uint8Array>` | |
+| `s.i32ArrayArg(xs)` | `WasmBlock<Int32Array>` | takes an array or a typed array |
+| `s.f64ArrayArg(xs)` | `WasmBlock<Float64Array>` | |
+| `s.bytesOut(bytes)` | `WasmBlock<Uint8Array>` | empty space for wasm to write into |
+| `s.i32ArrayOut(len)` | `WasmBlock<Int32Array>` | |
+| `s.f64ArrayOut(len)` | `WasmBlock<Float64Array>` | |
+| `s.alloc(bytes)` | `WasmBlock<Uint8Array>` | raw reservation |
+
+`*Arg` copies data in, `*Out` reserves empty space. Every block carries `ptr`, `len`, `byteLength` and `read()`, and `read()` always copies rather than handing back a view.
 
 **Returning something new needs two values, and wasm returns one.** The usual answer is to pack the offset and length into a single `i64` — which is why it arrives in JavaScript as a `bigint`:
 
@@ -191,6 +218,19 @@ const packed = exports.reverseString(ptr, len);   // bigint
 const outPtr = Number(packed >> 32n);
 const outLen = Number(packed & 0xffffffffn);
 ```
+
+`stringVal` and `bytesVal` do that and free the block the module allocated, with `0n` — the conventional failure signal — coming back as `null`:
+
+```ts
+import { stringVal } from "react-use-wasm";
+
+const reversed = withScope((s) => {
+  const text = s.stringArg("hello wasm");
+  return stringVal(exports, exports.reverseString(text.ptr, text.len));
+});
+```
+
+Only use them on data the module freshly allocated: they free the pointer, so a pointer into static data would be freed wrongly.
 
 The other option is an out-pointer: pass a third offset and have the function write its result there. That is how `centroid` "returns" a struct.
 
@@ -208,7 +248,7 @@ exports.somethingThatAllocates();
 view.byteLength;  // 0 — detached, and nothing warned you
 ```
 
-Take a fresh view off `exports.memory.buffer` every time you use it. [`examples/react-demo/src/lib/wasm-memory.ts`](examples/react-demo/src/lib/wasm-memory.ts) does exactly that, and is a reasonable starting point to copy.
+Take a fresh view off `exports.memory.buffer` every time you use it. The scope helpers do exactly that, and `read()` copies out rather than returning a view, so a block stays readable across a `grow()` that happened in between.
 
 ---
 
@@ -450,6 +490,9 @@ Both sides are warmed up before timing, otherwise an un-JITted first call to the
 | `imports`   | `WebAssembly.Imports` | `{}`    | import object for instantiation          |
 | `cache`     | `boolean`             | `true`  | share the compiled module by URL         |
 | `fetchInit` | `RequestInit`         | —       | extra fetch options (headers, cookies)   |
+| `allocator` | `AllocatorNames`      | —       | export names for `withScope`, if not `alloc`/`free`/`memory` |
+
+Returns `status`, `isReady`, `exports`, `error`, plus `call`, `reload` and `withScope`. `withScope` is only callable when `T` extends `WasmAllocator`.
 
 ### `useWasmWorker<T>(url, options?)`
 
@@ -462,9 +505,22 @@ Both sides are warmed up before timing, otherwise an un-JITted first call to the
 
 Adds `terminate()` to the result, and `call` returns a Promise. There is no `exports` field: the instance lives in the worker, so `call` is the only way in.
 
+### Memory helpers
+
+For modules that export an allocator. Each takes the live `exports`, so they work outside React too — in a worker, in tests, in plain JavaScript.
+
+| export | meaning |
+| --- | --- |
+| `withScope(exports, body, names?)` | the standalone form of the hook's `withScope` |
+| `stringVal(exports, packed)` | read a packed `(offset, length)` return as a string, and free it |
+| `bytesVal(exports, packed)` | the same, undecoded |
+| `unpack(packed)` | `{ ptr, len }`, if you want it raw |
+| `memorySize(exports)` | current linear memory, in bytes |
+| `resolveAllocator(exports, names?)` | the lookup `withScope` does internally |
+
 ### Also exported
 
-`clearWasmCache(url?)`, `WASM_WORKER_SOURCE`, and the types `UseWasmOptions`, `UseWasmResult`, `UseWasmState`, `UseWasmHelpers`, `UseWasmWorkerOptions`, `UseWasmWorkerResult`, `UseWasmWorkerState`, `UseWasmWorkerHelpers`, `WasmFunctionKeys`.
+`clearWasmCache(url?)`, `WASM_WORKER_SOURCE`, and the types `UseWasmOptions`, `UseWasmResult`, `UseWasmState`, `UseWasmHelpers`, `UseWasmWorkerOptions`, `UseWasmWorkerResult`, `UseWasmWorkerState`, `UseWasmWorkerHelpers`, `WasmFunctionKeys`, `ScopeRunner`, `WasmAllocator`, `AllocatorNames`, `WasmScope`, `WasmBlock`.
 
 ---
 

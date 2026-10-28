@@ -62,6 +62,7 @@ against `dist/index.d.ts` and is the only thing that would catch a broken
 src/
   use-wasm.ts          hook + shared loader/cache + public types
   use-wasm-worker.ts   worker hook + WASM_WORKER_SOURCE
+  memory.ts            withScope + the linear-memory helpers (useWasm only)
   index.ts             public exports
 test/
   fixtures/*.wat       readable wasm fixtures, compiled at test time by wabt
@@ -75,10 +76,9 @@ examples/
     public/math.wasm           committed, so the demo and tests work without TinyGo
     public/memory.wasm         likewise; only the Examples tab fetches it
     public/js-fib-worker.js    the JavaScript side of the worker benchmark
-    src/pages/                 one per tab: Benchmarks, Examples
+    src/pages/                 one per tab: Benchmarks, Examples, API
     src/panels/                the three Benchmarks panels
-    src/examples/              the three Examples cards
-    src/lib/wasm-memory.ts     the JS half of the linear-memory protocol
+    src/examples/              the Examples cards, incl. the worker's numbers-only limit
     src/fib.ts                 the JavaScript side of the main-thread benchmark
     src/useJsWorker.ts         demo-only hook, shaped like useWasmWorker
 scripts/
