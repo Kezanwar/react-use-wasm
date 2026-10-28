@@ -233,18 +233,19 @@ test("bad JSON surfaces the module's 0n failure signal", async ({ page }) => {
   await expect(page.getByTestId("objects-stats")).toContainText("0n");
 });
 
-test("the worker hook allocates inside the worker and gets a number back", async ({ page }) => {
+test("the Examples worker card runs fib off the main thread", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("tab-examples").click();
 
   const run = page.getByTestId("worker-limits-run");
   // The worker has to start and instantiate before the button enables.
   await expect(run).toBeEnabled({ timeout: 20_000 });
+
+  await page.getByTestId("worker-limits-n").fill("30");
   await run.click();
 
-  // A real pointer, crossing as a plain number. Everything bigger stays
-  // behind in the worker, which is the point the card makes.
-  await expect(page.getByTestId("worker-limits-ptr")).toContainText(/ptr 0x[0-9a-f]+/, {
-    timeout: 20_000,
+  await expect(page.getByTestId("worker-limits-value")).toHaveText(digits(832040), {
+    timeout: 30_000,
   });
+  await expect(page.getByTestId("worker-limits-ms")).toHaveText(MS);
 });

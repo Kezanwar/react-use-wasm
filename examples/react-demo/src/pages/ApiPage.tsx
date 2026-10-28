@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Boxes, Cpu, Download, MemoryStick, Wrench } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
-import { CodeBlock } from "@/components/CodeBlock";
+import { CodeBlock, HighlightedCode } from "@/components/CodeBlock";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -33,16 +33,16 @@ function Entry({
           </Badge>
         )}
       </div>
-      <pre className="border-border bg-muted/50 text-muted-foreground overflow-x-auto rounded-md border px-3 py-2 font-mono text-[12px] leading-relaxed">
-        {signature}
-      </pre>
+      <HighlightedCode
+        code={signature}
+        className="border-border bg-muted/50 rounded-md border px-3 py-2 text-[12px] leading-relaxed"
+      />
       <div className="text-muted-foreground space-y-2 text-sm">{children}</div>
     </div>
   );
 }
 
-const INSTALL = `pnpm add react-use-wasm
-# react 18 or 19 is a peer dependency; there are no others`;
+const INSTALL = `pnpm add react-use-wasm`;
 
 const USE_WASM = `const { status, isReady, exports, error, call, withScope, reload } =
   useWasm<MathExports>("/math.wasm", {
@@ -116,8 +116,9 @@ export function ApiPage() {
             Install
           </CardTitle>
           <CardDescription>
-            Zero runtime dependencies. ESM and CJS, with a <code>"use client"</code> banner so it
-            drops into a Next.js app router without ceremony.
+            React 18 or 19 as a peer dependency, and no others. ESM and CJS, with a{" "}
+            <code>"use client"</code> banner so it drops into a Next.js app router without
+            ceremony.
           </CardDescription>
         </CardHeader>
         <CardContent>
