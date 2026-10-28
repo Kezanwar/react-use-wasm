@@ -68,7 +68,7 @@ export function WorkerLimitsExample() {
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <p className="text-muted-foreground text-sm">
           A <code>WebAssembly.Memory</code> is not structured-cloneable, so the worker hook never
           hands one back. <code>call</code> works perfectly for arguments and results that are{" "}

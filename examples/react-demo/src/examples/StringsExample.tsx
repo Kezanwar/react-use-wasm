@@ -96,7 +96,7 @@ export function StringsExample({ e, withScope }: MemoryProps) {
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">
           <Input
             value={text}
