@@ -132,7 +132,7 @@ export function WorkerLimitsExample() {
           algorithm in a plain <Js /> worker.
         </p>
 
-        <CodeBlock code={SNIPPET} />
+        <CodeBlock code={SNIPPET} label="TypeScript" />
       </CardContent>
     </Card>
   );

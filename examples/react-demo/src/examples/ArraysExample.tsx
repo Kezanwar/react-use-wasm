@@ -98,7 +98,7 @@ export function ArraysExample({ e, withScope }: MemoryProps) {
           </div>
         </dl>
 
-        <CodeBlock code={SNIPPET} />
+        <CodeBlock code={SNIPPET} label="TypeScript" />
       </CardContent>
     </Card>
   );
