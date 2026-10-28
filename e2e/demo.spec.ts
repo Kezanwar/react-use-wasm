@@ -249,3 +249,33 @@ test("the Examples worker card runs fib off the main thread", async ({ page }) =
   });
   await expect(page.getByTestId("worker-limits-ms")).toHaveText(MS);
 });
+
+test("the n input can be emptied, and Run waits until it is not", async ({ page }) => {
+  await page.goto("/");
+
+  const n = page.getByTestId("main-n");
+  const run = page.getByTestId("main-run");
+  await expect(run).toBeEnabled({ timeout: 15_000 });
+
+  // A plain type="number" coerces an empty field to 0 and runs fib(0).
+  // Here it stays empty and the button waits.
+  await n.fill("");
+  await expect(n).toHaveValue("");
+  await expect(run).toBeDisabled();
+
+  // The steppers bring it back, starting from min.
+  const plus = page.getByRole("button", { name: "Increase n for the main-thread benchmark" });
+  await plus.click();
+  await expect(n).toHaveValue("0");
+  await expect(run).toBeEnabled();
+
+  await plus.click();
+  await expect(n).toHaveValue("1");
+
+  // Clamped at the panel's maximum, with the stepper disabled there.
+  await n.fill("42");
+  await expect(plus).toBeDisabled();
+  await n.fill("99");
+  await n.blur();
+  await expect(n).toHaveValue("42");
+});

@@ -7,7 +7,7 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/NumberInput";
 import { asset } from "@/lib/asset";
 
 const SNIPPET = `const { status, call, terminate } = useWasmWorker<MathExports>("/math.wasm", {
@@ -32,7 +32,7 @@ const value = await call("fib", 32);   // Promise<number>
 // via the workerUrl option, doing the alloc/write/read inside it.`;
 
 export function WorkerLimitsExample() {
-  const [n, setN] = useState(32);
+  const [n, setN] = useState<number | null>(32);
   const [value, setValue] = useState<number | null>(null);
   const [ms, setMs] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -42,6 +42,7 @@ export function WorkerLimitsExample() {
   });
 
   const run = async () => {
+    if (n === null) return;
     setBusy(true);
     try {
       const t0 = performance.now();
@@ -76,23 +77,22 @@ export function WorkerLimitsExample() {
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
               <code className="mr-1">fib(n)</code> n =
             </span>
-            <Input
-              type="number"
+            <NumberInput
+              value={n}
+              onChange={setN}
               min={1}
               max={42}
-              value={n}
-              onChange={(ev) => setN(Number(ev.target.value))}
-              data-testid="worker-limits-n"
-              className="tabular w-20"
+              testId="worker-limits-n"
+              label="n for the worker example"
             />
-          </label>
+          </div>
           <Button
             onClick={run}
-            disabled={status !== "ready" || busy}
+            disabled={status !== "ready" || busy || n === null}
             data-testid="worker-limits-run"
           >
             <Play className="size-4" /> Run in the worker

@@ -7,7 +7,7 @@ import { jsFib } from "@/fib";
 import { BenchCard, Verdict } from "@/components/BenchCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/NumberInput";
 import { Badge } from "@/components/ui/badge";
 import { asset } from "@/lib/asset";
 
@@ -25,7 +25,7 @@ const WARMUP_N = 24;
  * non-blocking. Watch the frame counter in the header stall for both.
  */
 export function MainThreadPanel() {
-  const [n, setN] = useState(32);
+  const [n, setN] = useState<number | null>(32);
   const [jsMs, setJsMs] = useState<number | null>(null);
   const [wasmMs, setWasmMs] = useState<number | null>(null);
   const [jsValue, setJsValue] = useState<number | null>(null);
@@ -39,6 +39,7 @@ export function MainThreadPanel() {
   });
 
   const run = async () => {
+    if (n === null) return;
     setBusy(true);
     setJsMs(null);
     setWasmMs(null);
@@ -110,21 +111,20 @@ export function MainThreadPanel() {
       {header}
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
               <code className="mr-1">fib(n)</code> n =
             </span>
-            <Input
-              type="number"
+            <NumberInput
               value={n}
+              onChange={setN}
               min={0}
               max={42}
-              data-testid="main-n"
-              onChange={(e) => setN(Number(e.target.value))}
-              className="tabular w-24"
+              testId="main-n"
+              label="n for the main-thread benchmark"
             />
-          </label>
-          <Button onClick={run} disabled={busy} data-testid="main-run">
+          </div>
+          <Button onClick={run} disabled={busy || n === null} data-testid="main-run">
             <Play className="size-4" /> Run both
           </Button>
           {busy && (
