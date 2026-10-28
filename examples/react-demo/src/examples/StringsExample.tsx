@@ -1,53 +1,47 @@
 import { useState } from "react";
 import { Type } from "lucide-react";
 import { Js } from "@/components/Term";
-import type { MemoryExports } from "@/memory-exports";
-import { encode, readString, takePackedString, unpack, withAlloc, writeBytes } from "@/lib/wasm-memory";
+import { stringVal, unpack } from "react-use-wasm";
+import type { MemoryProps } from "@/memory-exports";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-const SNIPPET = `const bytes = new TextEncoder().encode("hello wasm");
-const ptr = exports.alloc(bytes.length);
-new Uint8Array(exports.memory.buffer).set(bytes, ptr);
+const SNIPPET = `const reversed = withScope((s) => {
+  // stringArg encodes to UTF-8 and sizes the block in BYTES, which is
+  // not "hello wasm".length the moment you type a non-ASCII character.
+  const text = s.stringArg("hello wasm");
 
-exports.upperInPlace(ptr, bytes.length);           // same length, in place
+  exports.upperInPlace(text.ptr, text.len);    // same length, in place
 
-// A new string can be a different length, so Go returns the
-// (offset, length) pair packed into one i64 -> a JS bigint.
-const packed = exports.reverseString(ptr, bytes.length);
-const outPtr = Number(packed >> 32n);
-const outLen = Number(packed & 0xffffffffn);
+  // A new string can be a different length, so Go returns the
+  // (offset, length) pair packed into one i64 -> a JS bigint.
+  // stringVal reads it and frees what the module allocated.
+  return stringVal(exports, exports.reverseString(text.ptr, text.len));
+});`;
 
-const result = new TextDecoder().decode(
-  new Uint8Array(exports.memory.buffer, outPtr, outLen)
-);
-exports.free(outPtr);
-exports.free(ptr);`;
-
-export function StringsExample({ e }: { e: MemoryExports }) {
+export function StringsExample({ e, withScope }: MemoryProps) {
   const [text, setText] = useState("hello wasm");
   const [upper, setUpper] = useState<string | null>(null);
   const [reversed, setReversed] = useState<string | null>(null);
   const [packed, setPacked] = useState<bigint | null>(null);
 
   const run = () => {
-    const bytes = encode(text);
-    if (bytes.length === 0) return;
+    if (text.length === 0) return;
 
-    withAlloc(e, bytes.length, (ptr) => {
-      writeBytes(e, ptr, bytes);
+    withScope((s) => {
+      const buf = s.stringArg(text);
 
       // Same length, so it can be done in place.
-      e.upperInPlace(ptr, bytes.length);
-      setUpper(readString(e, ptr, bytes.length));
+      e.upperInPlace(buf.ptr, buf.len);
+      setUpper(buf.read());
 
       // Different length is possible, so this one allocates and returns a
       // packed (offset, length) bigint.
-      const result = e.reverseString(ptr, bytes.length);
+      const result = e.reverseString(buf.ptr, buf.len);
       setPacked(result);
-      setReversed(takePackedString(e, result));
+      setReversed(stringVal(e, result));
     });
   };
 

@@ -1,11 +1,11 @@
-import { useWasm } from "react-use-wasm";
+import { memorySize, useWasm } from "react-use-wasm";
 import { MemoryStick, TriangleAlert } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
 import type { MemoryExports } from "@/memory-exports";
-import { memorySize } from "@/lib/wasm-memory";
 import { ArraysExample } from "@/examples/ArraysExample";
 import { StringsExample } from "@/examples/StringsExample";
 import { ObjectsExample } from "@/examples/ObjectsExample";
+import { WorkerLimitsExample } from "@/examples/WorkerLimitsExample";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { asset } from "@/lib/asset";
@@ -55,7 +55,9 @@ export function ExamplesPage() {
           as an <strong className="text-foreground">offset</strong> into one flat{" "}
           <code>ArrayBuffer</code> that both <Js /> and <Wasm>wasm</Wasm> can read and write:{" "}
           <code>exports.memory.buffer</code>. Every example below is the same four steps —
-          allocate, write, call with <code>(offset, length)</code>, read back, free.
+          allocate, write, call with <code>(offset, length)</code>, read back, free. The
+          package's <code>withScope</code> owns all four so you never pair an{" "}
+          <code>alloc</code> with a <code>free</code> by hand.
         </p>
 
         <div className="border-border bg-card text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
@@ -67,16 +69,16 @@ export function ExamplesPage() {
         </div>
       </div>
 
-      <ArraysExample e={e} />
-      <StringsExample e={e} />
-      <ObjectsExample e={e} />
+      <ArraysExample e={e} withScope={wasm.withScope} />
+      <StringsExample e={e} withScope={wasm.withScope} />
+      <ObjectsExample e={e} withScope={wasm.withScope} />
+      <WorkerLimitsExample />
 
       <p className="text-muted-foreground text-xs">
         One rule catches everyone: never cache a typed-array view.{" "}
-        <code>memory.grow()</code> detaches the old{" "}
-        <code>ArrayBuffer</code> and every view onto it becomes zero-length.
-        The helpers in <code>src/lib/wasm-memory.ts</code> take a fresh view
-        every time for exactly this reason.
+        <code>memory.grow()</code> detaches the old <code>ArrayBuffer</code> and every view onto
+        it becomes zero-length. Every helper takes a fresh view at the moment it is used, and{" "}
+        <code>read()</code> always copies out, for exactly this reason.
       </p>
     </div>
   );

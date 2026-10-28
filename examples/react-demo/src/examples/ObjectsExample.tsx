@@ -1,15 +1,8 @@
 import { useState } from "react";
 import { Boxes, TriangleAlert } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
-import type { MemoryExports } from "@/memory-exports";
-import {
-  encode,
-  readFloat64Array,
-  takePackedString,
-  withAlloc,
-  writeBytes,
-  writeFloat64Array,
-} from "@/lib/wasm-memory";
+import { stringVal } from "react-use-wasm";
+import type { MemoryProps } from "@/memory-exports";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,24 +11,25 @@ import { Separator } from "@/components/ui/separator";
 
 const STRUCT_SNIPPET = `// Go:  type Point struct { X, Y float64 }  -> 16 bytes, no padding.
 // JS simply agrees on the same layout.
-const points = Float64Array.from([0,0, 10,0, 10,10, 0,10]);
+const [x, y] = withScope((s) => {
+  const pts = s.f64ArrayArg([0,0, 10,0, 10,10, 0,10]);
 
-const ptr = exports.alloc(points.byteLength);
-new Float64Array(exports.memory.buffer, ptr, points.length).set(points);
+  // Wasm cannot return a struct, so it writes through an out-pointer.
+  // *Out reserves empty space; *Arg copies data in.
+  const out = s.f64ArrayOut(2);
+  exports.centroid(pts.ptr, pts.len / 2, out.ptr);
 
-// Wasm cannot return a struct, so it writes through an out-pointer.
-const out = exports.alloc(16);
-exports.centroid(ptr, 4, out);
+  return out.read();
+});`;
 
-const [x, y] = new Float64Array(exports.memory.buffer, out, 2);`;
+const JSON_SNIPPET = `const stats = withScope((s) => {
+  const json = s.stringArg(JSON.stringify(people));
 
-const JSON_SNIPPET = `const bytes = new TextEncoder().encode(JSON.stringify(people));
-const ptr = exports.alloc(bytes.length);
-new Uint8Array(exports.memory.buffer).set(bytes, ptr);
-
-// Go unmarshals, computes, marshals, and returns the result string
-// as a packed (offset, length) bigint. 0n means it would not parse.
-const stats = JSON.parse(takePackedString(exports, exports.jsonStats(ptr, bytes.length)));`;
+  // Go unmarshals, computes, marshals, and returns the result string
+  // as a packed (offset, length) bigint. 0n means it would not parse,
+  // and stringVal turns that into null.
+  return stringVal(exports, exports.jsonStats(json.ptr, json.len));
+});`;
 
 const DEFAULT_POINTS = "0,0  10,0  10,10  0,10";
 const DEFAULT_PEOPLE = `[
@@ -53,7 +47,7 @@ function parsePoints(text: string): Float64Array {
   return Float64Array.from(nums.slice(0, nums.length - (nums.length % 2)));
 }
 
-export function ObjectsExample({ e }: { e: MemoryExports }) {
+export function ObjectsExample({ e, withScope }: MemoryProps) {
   const [pointText, setPointText] = useState(DEFAULT_POINTS);
   const [centroid, setCentroid] = useState<[number, number] | null>(null);
 
@@ -66,21 +60,20 @@ export function ObjectsExample({ e }: { e: MemoryExports }) {
     if (flat.length === 0) return;
     const count = flat.length / 2;
 
-    withAlloc(e, flat.byteLength, (ptr) => {
-      writeFloat64Array(e, ptr, flat);
-      withAlloc(e, 16, (out) => {
-        e.centroid(ptr, count, out);
-        const [x, y] = readFloat64Array(e, out, 2);
-        setCentroid([x!, y!]);
-      });
+    withScope((s) => {
+      const pts = s.f64ArrayArg(flat);
+      const out = s.f64ArrayOut(2);
+      e.centroid(pts.ptr, count, out.ptr);
+      const [x, y] = out.read();
+      setCentroid([x!, y!]);
     });
   };
 
   const runJson = () => {
-    const bytes = encode(peopleText);
-    withAlloc(e, bytes.length, (ptr) => {
-      writeBytes(e, ptr, bytes);
-      const result = takePackedString(e, e.jsonStats(ptr, bytes.length));
+    if (peopleText.length === 0) return;
+    withScope((s) => {
+      const json = s.stringArg(peopleText);
+      const result = stringVal(e, e.jsonStats(json.ptr, json.len));
       setJsonError(result === null);
       setStats(result);
     });

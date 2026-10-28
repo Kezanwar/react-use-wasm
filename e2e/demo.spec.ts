@@ -158,7 +158,7 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
   await expect(floating).toHaveCount(0);
 });
 
-test("tabs switch between the two pages", async ({ page }) => {
+test("tabs switch between the pages", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
@@ -227,4 +227,20 @@ test("bad JSON surfaces the module's 0n failure signal", async ({ page }) => {
   await page.getByTestId("objects-json-run").click();
 
   await expect(page.getByTestId("objects-stats")).toContainText("0n");
+});
+
+test("the worker hook allocates inside the worker and gets a number back", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-examples").click();
+
+  const run = page.getByTestId("worker-limits-run");
+  // The worker has to start and instantiate before the button enables.
+  await expect(run).toBeEnabled({ timeout: 20_000 });
+  await run.click();
+
+  // A real pointer, crossing as a plain number. Everything bigger stays
+  // behind in the worker, which is the point the card makes.
+  await expect(page.getByTestId("worker-limits-ptr")).toContainText(/ptr 0x[0-9a-f]+/, {
+    timeout: 20_000,
+  });
 });
