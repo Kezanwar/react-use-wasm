@@ -64,7 +64,7 @@ function MemorySection() {
 
   if (wasm.status === "error") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {intro}
         <Card>
           <CardContent className="space-y-3 pt-6">
@@ -84,7 +84,7 @@ function MemorySection() {
   // `MemoryExports | null` to `MemoryExports` for everything below.
   if (!wasm.isReady) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {intro}
         <p className="text-muted-foreground text-sm">Loading wasm…</p>
       </div>

@@ -27,7 +27,7 @@ function Entry({
   children: ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-foreground font-mono text-sm font-semibold">{name}</h3>
         {badge && (
@@ -123,7 +123,7 @@ export function ApiPage() {
             Loads, compiles and instantiates a module, then gives you its exports synchronously.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-8">
           <CodeBlock code={USE_WASM} label="TypeScript" language="tsx" />
 
           <Entry name="status / isReady / exports / error" signature={STATE}>
@@ -247,7 +247,7 @@ export function ApiPage() {
             <code>call</code> returns a Promise.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-8">
           <CodeBlock code={WORKER} label="TypeScript" language="tsx" />
 
           <Entry
@@ -296,7 +296,7 @@ export function ApiPage() {
             Odds and ends
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-8">
           <Entry name="clearWasmCache" signature={`clearWasmCache(url?: string): void`}>
             <p>
               Compiled modules are cached by URL and shared between both hooks, so a second
