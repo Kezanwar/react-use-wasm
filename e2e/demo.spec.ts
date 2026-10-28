@@ -158,7 +158,7 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
   await expect(floating).toHaveCount(0);
 });
 
-test("tabs switch between the pages", async ({ page }) => {
+test("tabs switch between the three pages", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
@@ -166,6 +166,10 @@ test("tabs switch between the pages", async ({ page }) => {
   await page.getByTestId("tab-examples").click();
   await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByTestId("main-run")).toBeHidden();
+
+  await page.getByTestId("tab-api").click();
+  await expect(page.getByText("WasmAllocator").first()).toBeVisible();
+  await expect(page.getByTestId("arrays-run")).toBeHidden();
 
   await page.getByTestId("tab-benchmarks").click();
   await expect(page.getByTestId("main-run")).toBeVisible();
