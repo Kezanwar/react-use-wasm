@@ -77,16 +77,16 @@ function Frame({
   return (
     <div
       data-testid={testId}
-      className={cn("border-border overflow-hidden rounded-xl border shadow-sm", className)}
+      className={cn("code-frame overflow-hidden rounded-xl border shadow-sm", className)}
     >
-      <div className="border-border bg-muted flex items-center gap-2 border-b py-1.5 pr-1.5 pl-3">
-        <FileCode2 className="text-muted-foreground size-3.5 shrink-0" />
+      <div className="code-chrome flex items-center gap-2 border-b py-1.5 pr-1.5 pl-3">
+        <FileCode2 className="size-3.5 shrink-0" />
         {title}
         <button
           type="button"
           onClick={copy}
           aria-label="Copy code"
-          className="text-muted-foreground hover:bg-background hover:text-foreground ml-auto flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
+          className="ml-auto flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
         >
           {copied ? (
             <>
@@ -103,7 +103,7 @@ function Frame({
       <HighlightedCode
         code={code}
         language={language}
-        className="bg-card p-3.5 text-[12.5px] leading-relaxed"
+        className="p-3.5 text-[12.5px] leading-relaxed"
       />
     </div>
   );
@@ -125,11 +125,7 @@ export function CodeBlock({
       code={code}
       language={language}
       className={className}
-      title={
-        <span className="text-muted-foreground font-mono text-[11px] tracking-wide uppercase">
-          {label}
-        </span>
-      }
+      title={<span className="font-mono text-[11px] tracking-wide uppercase">{label}</span>}
     />
   );
 }
@@ -170,7 +166,7 @@ export function CodeTabs({
         <div
           role="tablist"
           aria-label="Code style"
-          className="border-border flex min-w-0 items-center gap-0.5 overflow-hidden rounded-md border p-0.5"
+          className="flex min-w-0 items-center gap-0.5 overflow-hidden rounded-md border p-0.5"
         >
           {variants.map((variant, i) => (
             <button
@@ -179,12 +175,7 @@ export function CodeTabs({
               role="tab"
               aria-selected={i === index}
               onClick={() => setIndex(i)}
-              className={cn(
-                "truncate rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors",
-                i === index
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
+              className="truncate rounded px-2 py-0.5 font-mono text-[11px] font-medium transition-colors"
             >
               {variant.label}
             </button>

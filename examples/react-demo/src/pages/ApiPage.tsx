@@ -39,7 +39,7 @@ function Entry({
       {description && <p className="text-muted-foreground text-sm">{description}</p>}
       <HighlightedCode
         code={signature}
-        className="border-border bg-muted/50 rounded-md border px-3 py-2 text-[12px] leading-relaxed"
+        className="rounded-md border px-3 py-2 text-[12px] leading-relaxed"
       />
       <div className="text-muted-foreground space-y-2 text-sm">{children}</div>
     </div>

@@ -203,8 +203,80 @@ p,
 /* wins. Least specific meaning first, most specific last.              */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Code is dark in both themes, but not the same dark.
+ *
+ * The syntax palette was designed against a dark surface, and a light
+ * block beside a dark one in the same page reads as two documents. In the
+ * light theme the surface is lifted well off black, so a page of blocks
+ * is not a row of black bars, and the tokens are lifted with it to keep
+ * the contrast.
+ *
+ * Unlayered, like the rules above, so they beat Tailwind's bg-* and
+ * text-* utilities on the same elements.
+ */
+.code-block,
+.code-frame {
+  --code-surface: oklch(0.32 0.022 280);
+  --code-chrome: oklch(0.38 0.024 280);
+  --code-edge: oklch(1 0 0 / 16%);
+  --code-dim: oklch(0.76 0.015 280);
+  --code-fg: oklch(0.97 0.005 280);
+
+  --syn-plain: oklch(0.93 0.01 280);
+  --syn-comment: oklch(0.69 0.02 280);
+  --syn-keyword: oklch(0.8 0.15 292);
+  --syn-string: oklch(0.82 0.14 152);
+  --syn-number: oklch(0.82 0.13 52);
+  --syn-function: oklch(0.8 0.13 250);
+  --syn-class: oklch(0.86 0.11 85);
+  --syn-punct: oklch(0.72 0.02 280);
+}
+
+/* In the dark theme the block sits with the cards around it. */
+.dark .code-block,
+.dark .code-frame {
+  --code-surface: oklch(0.21 0.018 280);
+  --code-chrome: oklch(0.27 0.02 280);
+  --code-edge: oklch(1 0 0 / 12%);
+  --code-dim: oklch(0.69 0.015 280);
+  --code-fg: oklch(0.96 0.005 280);
+
+  --syn-plain: oklch(0.9 0.01 280);
+  --syn-comment: oklch(0.58 0.02 280);
+  --syn-keyword: oklch(0.76 0.15 292);
+  --syn-string: oklch(0.78 0.14 152);
+  --syn-number: oklch(0.78 0.13 52);
+  --syn-function: oklch(0.76 0.13 250);
+  --syn-class: oklch(0.82 0.11 85);
+  --syn-punct: oklch(0.65 0.02 280);
+}
+
 .code-block {
+  background: var(--code-surface);
+  border-color: var(--code-edge);
   color: var(--syn-plain);
+}
+
+.code-frame {
+  border-color: var(--code-edge);
+}
+
+/* The title bar: language name, tabs, Copy. */
+.code-chrome {
+  background: var(--code-chrome);
+  border-color: var(--code-edge);
+  color: var(--code-dim);
+}
+
+.code-chrome button {
+  color: var(--code-dim);
+}
+
+.code-chrome button:hover,
+.code-chrome [role="tab"][aria-selected="true"] {
+  background: var(--code-surface);
+  color: var(--code-fg);
 }
 
 .code-block .token.comment,
