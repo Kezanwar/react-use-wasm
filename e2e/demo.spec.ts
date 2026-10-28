@@ -158,10 +158,14 @@ test("the frame counter belongs to Benchmarks and pins itself when scrolled past
   await expect(floating).toHaveCount(0);
 });
 
-test("tabs switch between the three pages", async ({ page }) => {
+test("tabs switch between the four pages", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByTestId("main-run")).toBeVisible({ timeout: 15_000 });
+
+  await page.getByTestId("tab-start").click();
+  await expect(page.getByTestId("start-code-tabs")).toBeVisible();
+  await expect(page.getByTestId("main-run")).toBeHidden();
 
   await page.getByTestId("tab-examples").click();
   await expect(page.getByTestId("arrays-run")).toBeVisible({ timeout: 15_000 });
@@ -342,4 +346,34 @@ test("the Examples page leads with a module that needs no memory", async ({ page
     return (numbers.compareDocumentPosition(arrays) & 4) !== 0;
   });
   expect(order).toBe(true);
+});
+
+test("Getting started walks from install to a running call", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("tab-start").click();
+
+  // Five numbered steps, in order.
+  await expect(page.getByText("Install", { exact: true })).toBeVisible();
+  for (const title of [
+    "Write the module",
+    "Build and serve it",
+    "Describe the exports",
+    "Call it",
+  ]) {
+    await expect(page.getByText(title, { exact: true })).toBeVisible();
+  }
+
+  // The build command has to be the one that actually works: standard Go
+  // produces a module these hooks cannot use.
+  await expect(page.getByText("tinygo build -target=wasm-unknown")).toBeVisible();
+
+  // The last step offers both hooks, same as the Numbers example.
+  const tabs = page.getByTestId("start-code-tabs");
+  await expect(tabs).toContainText("useWasm<MathExports>");
+  await tabs.getByRole("tab", { name: "useWasmWorker" }).click();
+  await expect(tabs).toContainText('await call("fib", 40)');
+
+  // Install moved here, so the API tab should no longer carry it.
+  await page.getByTestId("tab-api").click();
+  await expect(page.getByText("npm install react-use-wasm")).toHaveCount(0);
 });

@@ -1,9 +1,10 @@
-import { BookMarked, CodeXml, Gauge, Puzzle } from "lucide-react";
+import { BookMarked, CodeXml, Gauge, Puzzle, Rocket } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Wasm } from "@/components/Term";
 import { BenchmarksPage } from "@/pages/BenchmarksPage";
 import { ExamplesPage } from "@/pages/ExamplesPage";
 import { ApiPage } from "@/pages/ApiPage";
+import { GettingStartedPage } from "@/pages/GettingStartedPage";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -36,6 +37,9 @@ export function App() {
             <TabsTrigger value="benchmarks" data-testid="tab-benchmarks">
               <Gauge className="size-4" /> Benchmarks
             </TabsTrigger>
+            <TabsTrigger value="start" data-testid="tab-start">
+              <Rocket className="size-4" /> Getting started
+            </TabsTrigger>
             <TabsTrigger value="examples" data-testid="tab-examples">
               <Puzzle className="size-4" /> Examples
             </TabsTrigger>
@@ -46,6 +50,10 @@ export function App() {
 
           <TabsContent value="benchmarks" className="mt-5">
             <BenchmarksPage />
+          </TabsContent>
+
+          <TabsContent value="start" className="mt-5">
+            <GettingStartedPage />
           </TabsContent>
 
           <TabsContent value="examples" className="mt-5">
