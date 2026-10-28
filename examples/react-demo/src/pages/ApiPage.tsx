@@ -26,7 +26,7 @@ function Entry({
   return (
     <div className="space-y-1.5">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-code font-mono text-sm font-semibold">{name}</h3>
+        <h3 className="text-foreground font-mono text-sm font-semibold">{name}</h3>
         {badge && (
           <Badge variant="secondary" className="font-normal">
             {badge}
@@ -130,7 +130,7 @@ export function ApiPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Boxes className="text-primary size-4" />
-            <span className="text-code font-mono">useWasm</span>
+            <span className="font-mono">useWasm</span>
             <Badge variant="secondary">main thread</Badge>
           </CardTitle>
           <CardDescription>
@@ -183,7 +183,7 @@ export function ApiPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Cpu className="text-primary size-4" />
-            <span className="text-code font-mono">useWasmWorker</span>
+            <span className="font-mono">useWasmWorker</span>
             <Badge variant="secondary">off thread</Badge>
           </CardTitle>
           <CardDescription>
