@@ -35,8 +35,12 @@
   --wasm: oklch(0.54 0.23 285);
   --wasm-soft: oklch(0.96 0.03 285);
   /* Inline code in prose. Deliberately a redder orange than --js, which is
-     a gold, so the two never read as the same thing. */
+     a gold, so the two never read as the same thing. The chip around it is
+     warm rather than neutral, so it sits with the text and not with the
+     cards. */
   --code: oklch(0.56 0.16 45);
+  --code-bg: oklch(0.97 0.012 55);
+  --code-border: oklch(0.9 0.025 55);
 
   /* Syntax highlighting. Keyword violet deliberately matches --wasm so the
      blocks sit in the same world as the rest of the page. */
@@ -75,6 +79,8 @@
   --wasm: oklch(0.72 0.17 288);
   --wasm-soft: oklch(0.3 0.06 288);
   --code: oklch(0.76 0.13 50);
+  --code-bg: oklch(0.25 0.018 50);
+  --code-border: oklch(0.37 0.03 50);
 
   --syn-plain: oklch(0.9 0.01 280);
   --syn-comment: oklch(0.58 0.02 280);
@@ -143,13 +149,30 @@
    */
   code {
     @apply font-mono;
-    font-size: 0.9em;
+    font-size: 0.85em;
     color: var(--code);
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 0.3rem;
+    padding: 0.1em 0.35em;
+    /* Keeps the chip from pushing lines apart in dense prose. */
+    line-height: 1.35;
+    /* Long identifiers break rather than overflow on a phone. The chip
+       looks odd split across two lines, but a horizontal scrollbar on the
+       whole page is worse. */
+    overflow-wrap: break-word;
   }
 
+  /* Code *blocks* opt out of all of it: the chrome belongs to the frame,
+     and a wall of orange chips would be unreadable. */
   pre code {
     color: inherit;
     font-size: inherit;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    line-height: inherit;
   }
 }
 

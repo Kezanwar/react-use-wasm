@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { Brackets } from "lucide-react";
 import { Js, Wasm } from "@/components/Term";
-import type { MemoryExports } from "@/memory-exports";
-import { readInt32Array, withAlloc, writeInt32Array } from "@/lib/wasm-memory";
+import type { MemoryProps } from "@/memory-exports";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-const SNIPPET = `// JS owns the data, wasm reads and writes it in place.
-const xs = Int32Array.from([5, 3, 9, 1, 7]);
+const SNIPPET = `const { exports, withScope } = useWasm<MemoryExports>("/memory.wasm");
 
-const ptr = exports.alloc(xs.byteLength);          // reserve
-new Int32Array(exports.memory.buffer, ptr, xs.length).set(xs);  // write
+// The scope allocates, writes, and frees on the way out.
+const { total, sorted } = withScope((s) => {
+  const xs = s.i32ArrayArg([5, 3, 9, 1, 7]);
 
-const total = exports.sumInt32(ptr, xs.length);    // read-only
-exports.sortInt32(ptr, xs.length);                 // mutates in place
+  const total = exports.sumInt32(xs.ptr, xs.len);  // read-only
+  exports.sortInt32(xs.ptr, xs.len);               // mutates in place
 
-const sorted = new Int32Array(exports.memory.buffer, ptr, xs.length);
-exports.free(ptr);`;
+  return { total, sorted: [...xs.read()] };        // read() copies out
+});`;
 
 const parse = (text: string): Int32Array =>
   Int32Array.from(
@@ -28,7 +28,7 @@ const parse = (text: string): Int32Array =>
       .filter((n) => Number.isFinite(n))
   );
 
-export function ArraysExample({ e }: { e: MemoryExports }) {
+export function ArraysExample({ e, withScope }: MemoryProps) {
   const [text, setText] = useState("5, 3, 9, 1, 7");
   const [sum, setSum] = useState<number | null>(null);
   const [sorted, setSorted] = useState<number[] | null>(null);
@@ -38,15 +38,15 @@ export function ArraysExample({ e }: { e: MemoryExports }) {
     const xs = parse(text);
     if (xs.length === 0) return;
 
-    // One allocation, two calls, then free. withAlloc guarantees the free
+    // One allocation, two calls, then free. The scope guarantees the free
     // even if something throws in between.
-    withAlloc(e, xs.byteLength, (ptr) => {
-      setOffset(ptr);
-      writeInt32Array(e, ptr, xs);
+    withScope((s) => {
+      const buf = s.i32ArrayArg(xs);
+      setOffset(buf.ptr);
 
-      setSum(e.sumInt32(ptr, xs.length));
-      e.sortInt32(ptr, xs.length);
-      setSorted([...readInt32Array(e, ptr, xs.length)]);
+      setSum(e.sumInt32(buf.ptr, buf.len));
+      e.sortInt32(buf.ptr, buf.len);
+      setSorted([...buf.read()]);
     });
   };
 
@@ -56,6 +56,9 @@ export function ArraysExample({ e }: { e: MemoryExports }) {
         <CardTitle className="flex items-center gap-2">
           <Brackets className="text-primary size-4" />
           Arrays
+          <Badge variant="secondary" className="font-mono">
+            useWasm
+          </Badge>
         </CardTitle>
         <CardDescription>
           An <code>Int32Array</code> is written into linear memory and passed as{" "}
@@ -99,7 +102,7 @@ export function ArraysExample({ e }: { e: MemoryExports }) {
           </div>
         </dl>
 
-        <CodeBlock code={SNIPPET} />
+        <CodeBlock code={SNIPPET} label="TypeScript" />
       </CardContent>
     </Card>
   );

@@ -12,6 +12,40 @@ import { cn } from "cn";
 const NO_INLINE_THEME: PrismTheme = { plain: {}, styles: [] };
 
 /**
+ * Just the highlighted source, no frame. Split out so signatures and other
+ * bare snippets colour the same way as a full code block; `.code-block` is
+ * what the token rules in styles.css hang off.
+ */
+export function HighlightedCode({
+  code,
+  language = "tsx",
+  className,
+}: {
+  code: string;
+  language?: string;
+  className?: string;
+}) {
+  return (
+    <Highlight code={code.trim()} language={language} theme={NO_INLINE_THEME}>
+      {({ tokens, getLineProps, getTokenProps }) => (
+        <pre className={cn("code-block overflow-x-auto", className)}>
+          <code>
+            {tokens.map((line, i) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={i} {...getLineProps({ line })}>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </code>
+        </pre>
+      )}
+    </Highlight>
+  );
+}
+
+/**
  * Highlighted source in an editor-style frame. The chrome is the point: in
  * a page where prose already contains coloured identifiers, a block needs a
  * border and a title bar to read as "this is a file", not "this is a
@@ -20,7 +54,7 @@ const NO_INLINE_THEME: PrismTheme = { plain: {}, styles: [] };
 export function CodeBlock({
   code,
   label = "JavaScript",
-  language = "jsx",
+  language = "tsx",
   className,
 }: {
   code: string;
@@ -61,22 +95,11 @@ export function CodeBlock({
         </button>
       </div>
 
-      <Highlight code={code.trim()} language={language} theme={NO_INLINE_THEME}>
-        {({ tokens, getLineProps, getTokenProps }) => (
-          <pre className="bg-card code-block overflow-x-auto p-3.5 text-[12.5px] leading-relaxed">
-            <code>
-              {tokens.map((line, i) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <div key={i} {...getLineProps({ line })}>
-                  {line.map((token, key) => (
-                    <span key={key} {...getTokenProps({ token })} />
-                  ))}
-                </div>
-              ))}
-            </code>
-          </pre>
-        )}
-      </Highlight>
+      <HighlightedCode
+        code={code}
+        language={language}
+        className="bg-card p-3.5 text-[12.5px] leading-relaxed"
+      />
     </div>
   );
 }

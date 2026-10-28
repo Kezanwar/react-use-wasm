@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  MATH_FUNCTION_NAMES,
-  type MathExports,
-} from "../examples/react-demo/src/math-exports";
+import { MATH_FUNCTION_NAMES, type MathExports } from "../examples/react-demo/src/math-exports";
 import { mathWasmBytes } from "./helpers/wat";
 
 /**
@@ -31,9 +28,9 @@ async function ready() {
 describe("examples/go/math -> math.wasm", () => {
   it("imports only env.log, so there are no WASI requirements", async () => {
     const { module } = await instantiate();
-    expect(
-      WebAssembly.Module.imports(module).map((i) => `${i.module}.${i.name}`)
-    ).toEqual(["env.log"]);
+    expect(WebAssembly.Module.imports(module).map((i) => `${i.module}.${i.name}`)).toEqual([
+      "env.log",
+    ]);
   });
 
   it("exports an _initialize, which is why the hooks call it", async () => {

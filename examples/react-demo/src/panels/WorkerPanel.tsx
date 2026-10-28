@@ -7,7 +7,7 @@ import { useJsWorker } from "@/useJsWorker";
 import { BenchCard, Verdict } from "@/components/BenchCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/NumberInput";
 import { Badge } from "@/components/ui/badge";
 import { asset } from "@/lib/asset";
 
@@ -22,7 +22,7 @@ const WARMUP_N = 24;
  * counter in the header keeps climbing for both.
  */
 export function WorkerPanel() {
-  const [n, setN] = useState(40);
+  const [n, setN] = useState<number | null>(40);
   const [jsMs, setJsMs] = useState<number | null>(null);
   const [wasmMs, setWasmMs] = useState<number | null>(null);
   const [jsValue, setJsValue] = useState<number | null>(null);
@@ -35,9 +35,10 @@ export function WorkerPanel() {
   });
   const js = useJsWorker(asset("js-fib-worker.js"));
 
-  const ready = wasm.status === "ready" && js.isReady;
+  const ready = wasm.status === "ready" && js.isReady && n !== null;
 
   const run = async () => {
+    if (n === null) return;
     setBusy(true);
     setNote(null);
     setJsMs(null);
@@ -83,13 +84,13 @@ export function WorkerPanel() {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Layers className="text-primary size-4" />
-        <code className="text-foreground text-base">useWasmWorker</code>
+        <span className="font-mono text-base">useWasmWorker</span>
         <Badge variant="secondary">Web Worker</Badge>
       </CardTitle>
       <CardDescription>
-        <code>call</code> returns a Promise and the work happens off the main thread, so the
-        page stays interactive throughout. <Js /> runs in a plain module worker,{" "}
-        <Wasm>wasm</Wasm> in <code>useWasmWorker</code>.
+        <code>call</code> returns a Promise and the work happens off the main thread, so the page
+        stays interactive throughout. <Js /> runs in a plain module worker, <Wasm>wasm</Wasm> in{" "}
+        <code>useWasmWorker</code>.
       </CardDescription>
     </CardHeader>
   );
@@ -115,20 +116,19 @@ export function WorkerPanel() {
       {header}
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
-              <code>fib(n)</code>, n =
+              <code className="mr-1">fib(n)</code> n =
             </span>
-            <Input
-              type="number"
+            <NumberInput
               value={n}
+              onChange={setN}
               min={0}
               max={45}
-              data-testid="worker-n"
-              onChange={(e) => setN(Number(e.target.value))}
-              className="tabular w-24"
+              testId="worker-n"
+              label="n for the worker benchmark"
             />
-          </label>
+          </div>
           <Button onClick={run} disabled={!ready || busy} data-testid="worker-run">
             <Play className="size-4" /> {ready ? "Run both" : "Loading workers…"}
           </Button>

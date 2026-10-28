@@ -6,22 +6,14 @@ import type { MathExports } from "@/math-exports";
 import { jsFib } from "@/fib";
 import { BenchCard, Verdict } from "@/components/BenchCard";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NumberInput } from "@/components/NumberInput";
 import { Badge } from "@/components/ui/badge";
 import { asset } from "@/lib/asset";
 
 /** Lets React paint before we hog the thread, so "running…" is actually seen. */
 const nextPaint = () =>
-  new Promise<void>((resolve) =>
-    requestAnimationFrame(() => setTimeout(resolve, 0)),
-  );
+  new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
 
 const WARMUP_N = 24;
 
@@ -33,23 +25,21 @@ const WARMUP_N = 24;
  * non-blocking. Watch the frame counter in the header stall for both.
  */
 export function MainThreadPanel() {
-  const [n, setN] = useState(32);
+  const [n, setN] = useState<number | null>(32);
   const [jsMs, setJsMs] = useState<number | null>(null);
   const [wasmMs, setWasmMs] = useState<number | null>(null);
   const [jsValue, setJsValue] = useState<number | null>(null);
   const [wasmValue, setWasmValue] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { status, error, call, reload } = useWasm<MathExports>(
-    asset("math.wasm"),
-    {
-      imports: {
-        env: { log: (x: number) => console.log("[main] wasm logged:", x) },
-      },
+  const { status, error, call, reload } = useWasm<MathExports>(asset("math.wasm"), {
+    imports: {
+      env: { log: (x: number) => console.log("[main] wasm logged:", x) },
     },
-  );
+  });
 
   const run = async () => {
+    if (n === null) return;
     setBusy(true);
     setJsMs(null);
     setWasmMs(null);
@@ -81,13 +71,12 @@ export function MainThreadPanel() {
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Cpu className="text-primary size-4" />
-        <code className="text-foreground text-base">useWasm</code>
+        <span className="font-mono text-base">useWasm</span>
         <Badge variant="secondary">main thread</Badge>
       </CardTitle>
       <CardDescription>
-        <code>call</code> is synchronous, so results can be used straight in a
-        render body. Both sides run here on the main thread: <Js /> first, then{" "}
-        <Wasm>wasm</Wasm>.
+        <code>call</code> is synchronous, so results can be used straight in a render body. Both
+        sides run here on the main thread: <Js /> first, then <Wasm>wasm</Wasm>.
       </CardDescription>
     </CardHeader>
   );
@@ -96,9 +85,7 @@ export function MainThreadPanel() {
     return (
       <Card>
         {header}
-        <CardContent className="text-muted-foreground text-sm">
-          Loading wasm…
-        </CardContent>
+        <CardContent className="text-muted-foreground text-sm">Loading wasm…</CardContent>
       </Card>
     );
   }
@@ -124,28 +111,24 @@ export function MainThreadPanel() {
       {header}
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
-              <code>fib(n)</code>, n =
+              <code className="mr-1">fib(n)</code> n =
             </span>
-            <Input
-              type="number"
+            <NumberInput
               value={n}
+              onChange={setN}
               min={0}
               max={42}
-              data-testid="main-n"
-              onChange={(e) => setN(Number(e.target.value))}
-              className="tabular w-24"
+              testId="main-n"
+              label="n for the main-thread benchmark"
             />
-          </label>
-          <Button onClick={run} disabled={busy} data-testid="main-run">
+          </div>
+          <Button onClick={run} disabled={busy || n === null} data-testid="main-run">
             <Play className="size-4" /> Run both
           </Button>
           {busy && (
-            <span
-              className="text-muted-foreground text-sm"
-              data-testid="main-busy"
-            >
+            <span className="text-muted-foreground text-sm" data-testid="main-busy">
               Computing… (the page is frozen)
             </span>
           )}
@@ -177,9 +160,9 @@ export function MainThreadPanel() {
         <Verdict js={jsMs} wasm={wasmMs} testId="main-verdict" />
 
         <p className="text-muted-foreground text-xs">
-          Both run on the main thread, one after the other, each warmed up at n
-          = {WARMUP_N} first. Push n past 35 and watch the frame counter above
-          stop dead for both: faster is not the same as non-blocking.
+          Both run on the main thread, one after the other, each warmed up at n = {WARMUP_N} first.
+          Push n past 35 and watch the frame counter above stop dead for both: faster is not the
+          same as non-blocking.
         </p>
       </CardContent>
     </Card>

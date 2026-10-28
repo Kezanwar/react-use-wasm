@@ -134,9 +134,7 @@ describe("WASM_WORKER_SOURCE protocol", () => {
     await w.send({
       type: "init",
       module: await compile("imports"),
-      importsUrl: importsDataUrl(
-        "export const imports = { env: { log: () => {} } };"
-      ),
+      importsUrl: importsDataUrl("export const imports = { env: { log: () => {} } };"),
     });
     expect(w.last()).toEqual({ type: "ready" });
   });

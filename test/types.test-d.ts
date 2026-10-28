@@ -4,6 +4,8 @@ import {
   useWasmWorker,
   type UseWasmResult,
   type UseWasmState,
+  type WasmAllocator,
+  type WasmBlock,
   type WasmFunctionKeys,
 } from "react-use-wasm";
 
@@ -16,7 +18,13 @@ interface MathExports {
   bigAdd(a: bigint, b: bigint): bigint;
 }
 
+/** The same module, but declaring the allocator contract. */
+interface AllocExports extends MathExports, WasmAllocator {
+  sortInt32(ptr: number, len: number): void;
+}
+
 declare const main: UseWasmResult<MathExports>;
+declare const alloc: UseWasmResult<AllocExports>;
 declare const worker: ReturnType<typeof useWasmWorker<MathExports>>;
 
 describe("WasmFunctionKeys", () => {
@@ -152,5 +160,23 @@ describe("isReady is a discriminant, not a derived boolean", () => {
     exports.add("2", 3);
     // @ts-expect-error not an export
     exports.subtract(1, 2);
+  });
+});
+
+describe("useWasm().withScope", () => {
+  it("is callable when the exports declare an allocator", () => {
+    const out = alloc.withScope((s) => {
+      expectTypeOf(s.i32ArrayArg([1, 2])).toEqualTypeOf<WasmBlock<Int32Array>>();
+      expectTypeOf(s.stringArg("hi")).toEqualTypeOf<WasmBlock<string>>();
+      expectTypeOf(s.f64ArrayOut(2)).toEqualTypeOf<WasmBlock<Float64Array>>();
+      return s.i32ArrayArg([1, 2]).read();
+    });
+    expectTypeOf(out).toEqualTypeOf<Int32Array>();
+  });
+
+  it("is not callable when they do not", () => {
+    // @ts-expect-error MathExports declares no alloc/free, so the callback
+    // is checked against the explanatory string literal instead.
+    main.withScope((s) => s.stringArg("hi"));
   });
 });

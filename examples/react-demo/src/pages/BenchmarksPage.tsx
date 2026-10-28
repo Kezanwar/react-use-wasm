@@ -10,8 +10,8 @@ export function BenchmarksPage() {
       <div className="space-y-3">
         <p className="text-muted-foreground text-sm">
           Each panel runs the same naive recursive <code>fib</code> twice, once in <Js /> and once
-          in the TinyGo <Wasm /> module. Both sides are warmed up first and run sequentially, so
-          the only variable is the language.
+          in the TinyGo <Wasm /> module. Both sides are warmed up first and run sequentially, so the
+          only variable is the language.
         </p>
         {/* Lives here rather than in the header: it only means anything next
             to the benchmarks. */}

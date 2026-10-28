@@ -1,4 +1,4 @@
-import type { WasmFunctionKeys } from "react-use-wasm";
+import type { WasmAllocator, WasmFunctionKeys, WasmScope } from "react-use-wasm";
 
 /**
  * The exports of examples/go/memory, built with
@@ -12,15 +12,13 @@ import type { WasmFunctionKeys } from "react-use-wasm";
  *
  * Checked against the real binary by test/memory-wasm.test.ts.
  */
-export interface MemoryExports {
+export interface MemoryExports extends WasmAllocator {
   memory: WebAssembly.Memory;
   /** TinyGo reactor init. The hooks run this for you; never call it yourself. */
   _initialize(): void;
 
-  /** Reserve `size` bytes, returning the offset to write them at. */
-  alloc(size: number): number;
-  /** Release a block from alloc. */
-  free(ptr: number): void;
+  // alloc and free come from WasmAllocator: declaring that interface is
+  // what makes `withScope` callable on this module.
 
   /** Sum an Int32Array living at (ptr, len). */
   sumInt32(ptr: number, len: number): number;
@@ -42,6 +40,15 @@ export interface MemoryExports {
   centroid(ptr: number, n: number, out: number): void;
   /** JSON in, JSON out, both as UTF-8 in memory. Packed bigint, 0n on bad input. */
   jsonStats(ptr: number, len: number): bigint;
+}
+
+/**
+ * What every example on the page needs: the live exports for direct calls,
+ * and the scope the hook pre-bound to them.
+ */
+export interface MemoryProps {
+  e: MemoryExports;
+  withScope: <R>(body: (s: WasmScope) => R) => R;
 }
 
 /** Runtime mirror of the callable exports, used by the test to check each one. */

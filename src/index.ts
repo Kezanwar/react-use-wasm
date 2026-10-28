@@ -5,6 +5,7 @@ export type {
   UseWasmState,
   UseWasmHelpers,
   WasmFunctionKeys,
+  ScopeRunner,
 } from "./use-wasm";
 
 export { useWasmWorker, WASM_WORKER_SOURCE } from "./use-wasm-worker";
@@ -14,3 +15,6 @@ export type {
   UseWasmWorkerState,
   UseWasmWorkerHelpers,
 } from "./use-wasm-worker";
+
+export { withScope, resolveAllocator, unpack, bytesVal, stringVal, memorySize } from "./memory";
+export type { WasmAllocator, AllocatorNames, WasmScope, WasmBlock } from "./memory";
