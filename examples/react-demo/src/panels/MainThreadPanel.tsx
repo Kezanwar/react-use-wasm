@@ -126,7 +126,7 @@ export function MainThreadPanel() {
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
-              <code>fib(n)</code>, n =
+              <code className="mr-1">fib(n)</code> n =
             </span>
             <Input
               type="number"

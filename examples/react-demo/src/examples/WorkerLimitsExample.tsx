@@ -5,7 +5,13 @@ import { Js, Wasm } from "@/components/Term";
 import type { MathExports } from "@/math-exports";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { asset } from "@/lib/asset";
@@ -37,9 +43,12 @@ export function WorkerLimitsExample() {
   const [ms, setMs] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { status, error, call, reload } = useWasmWorker<MathExports>(asset("math.wasm"), {
-    importsUrl: asset("wasm-imports.js"),
-  });
+  const { status, error, call, reload } = useWasmWorker<MathExports>(
+    asset("math.wasm"),
+    {
+      importsUrl: asset("wasm-imports.js"),
+    },
+  );
 
   const run = async () => {
     setBusy(true);
@@ -62,23 +71,26 @@ export function WorkerLimitsExample() {
           <Badge variant="secondary">numbers only</Badge>
         </CardTitle>
         <CardDescription>
-          Everything above used <code>useWasm</code>, where <Js /> and <Wasm>wasm</Wasm> share one{" "}
-          <code>ArrayBuffer</code>. Move the module into a worker and that stops being true.
+          Everything above used <code>useWasm</code>, where <Js /> and{" "}
+          <Wasm>wasm</Wasm> share one <code>ArrayBuffer</code>. Move the module
+          into a worker and that stops being true.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
         <p className="text-muted-foreground text-sm">
-          A <code>WebAssembly.Memory</code> is not structured-cloneable, so the worker hook never
-          hands one back. <code>call</code> works perfectly for arguments and results that are{" "}
-          <strong className="text-foreground">numbers or bigints</strong>, and there is no way to
-          read or write the module's memory from this thread at all.
+          A <code>WebAssembly.Memory</code> is not structured-cloneable, so the
+          worker hook never hands one back. <code>call</code> works perfectly
+          for arguments and results that are{" "}
+          <strong className="text-foreground">numbers or bigints</strong>, and
+          there is no way to read or write the module's memory from this thread
+          at all.
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">
-              <code>fib(n)</code>, n =
+              <code className="mr-1">fib(n)</code> n =
             </span>
             <Input
               type="number"
@@ -97,9 +109,15 @@ export function WorkerLimitsExample() {
           >
             <Play className="size-4" /> Run in the worker
           </Button>
-          {busy && <span className="text-muted-foreground text-sm">computing off-thread…</span>}
+          {busy && (
+            <span className="text-muted-foreground text-sm">
+              computing off-thread…
+            </span>
+          )}
           {status === "loading" && (
-            <span className="text-muted-foreground text-sm">starting worker…</span>
+            <span className="text-muted-foreground text-sm">
+              starting worker…
+            </span>
           )}
         </div>
 
@@ -115,23 +133,30 @@ export function WorkerLimitsExample() {
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-muted-foreground text-xs">result</dt>
-            <dd className="tabular font-mono font-semibold" data-testid="worker-limits-value">
+            <dd
+              className="tabular font-mono font-semibold"
+              data-testid="worker-limits-value"
+            >
               {value === null ? "—" : value.toLocaleString()}
             </dd>
           </div>
           <div>
             <dt className="text-muted-foreground text-xs">took</dt>
-            <dd className="tabular font-mono font-semibold" data-testid="worker-limits-ms">
+            <dd
+              className="tabular font-mono font-semibold"
+              data-testid="worker-limits-ms"
+            >
               {ms === null ? "—" : `${ms.toFixed(1)} ms`}
             </dd>
           </div>
         </dl>
 
         <p className="text-muted-foreground text-xs">
-          One number in, one number out, so nothing here needs linear memory. Push n to 40 and the
-          page still scrolls, which is the whole reason the hook exists. The{" "}
-          <strong className="text-foreground">Benchmarks</strong> tab races this against the same
-          algorithm in a plain <Js /> worker.
+          One number in, one number out, so nothing here needs linear memory.
+          Push n to 40 and the page still scrolls, which is the whole reason the
+          hook exists. The{" "}
+          <strong className="text-foreground">Benchmarks</strong> tab races this
+          against the same algorithm in a plain <Js /> worker.
         </p>
 
         <CodeBlock code={SNIPPET} label="TypeScript" />
