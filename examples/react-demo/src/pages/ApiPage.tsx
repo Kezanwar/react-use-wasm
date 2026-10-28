@@ -16,11 +16,14 @@ function Entry({
   name,
   signature,
   badge,
+  description,
   children,
 }: {
   name: string;
   signature: string;
   badge?: string;
+  /** One line under the name, before the signature. */
+  description?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -33,6 +36,7 @@ function Entry({
           </Badge>
         )}
       </div>
+      {description && <p className="text-muted-foreground text-sm">{description}</p>}
       <HighlightedCode
         code={signature}
         className="border-border bg-muted/50 rounded-md border px-3 py-2 text-[12px] leading-relaxed"
@@ -182,9 +186,12 @@ export function ApiPage() {
           {/* The memory layer only applies to this hook, so it lives in  */}
           {/* this card rather than one of its own.                       */}
           <div className="space-y-1.5">
-            <h3 className="text-foreground flex items-center gap-2 font-semibold">
+            <h3 className="text-foreground flex flex-wrap items-center gap-2 font-semibold">
               <MemoryStick className="text-primary size-4" />
               Memory
+              <Badge variant="secondary" className="font-normal">
+                useWasm only
+              </Badge>
             </h3>
             <p className="text-muted-foreground text-sm">
               For passing anything bigger than a number. Opt-in: a module with no allocator is
@@ -202,7 +209,17 @@ export function ApiPage() {
 
           <Separator />
 
-          <Entry name="withScope" signature={SCOPE}>
+          <Entry
+            name="withScope"
+            description={
+              <>
+                An opt-in helper for passing anything bigger than a number. It reserves the memory,
+                copies your data in, hands you the offset and length wasm wants, and frees it all
+                again on the way out.
+              </>
+            }
+            signature={SCOPE}
+          >
             <p>
               Everything the scope hands out is freed when the body returns, including when it
               throws. The helpers size the allocation themselves, which is the part that bites:{" "}
